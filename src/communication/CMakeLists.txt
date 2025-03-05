@@ -22,7 +22,7 @@ ament_target_dependencies(data_logger rclcpp ament_index_cpp nlohmann_json custo
 
 target_include_directories(data_logger PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTA;LL_INTERFACE:include>
+  $<INSTALL_INTERFACE:include>
 )
 
 add_executable(communicator src/communicator.cpp)
@@ -33,6 +33,14 @@ target_include_directories(communicator PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
 )
+
+# add_executable(navigation src/navigation.cpp)
+# ament_target_dependencies(navigation rclcpp customed_interfaces geometry_msgs nav_msgs)
+
+# target_include_directories(navigation PUBLIC
+#   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+#   $<INSTALL_INTERFACE:include>
+# )
 
 add_executable(request_history_server src/request_history_server.cpp)
 ament_target_dependencies(request_history_server rclcpp std_msgs nlohmann_json ament_index_cpp customed_interfaces)
