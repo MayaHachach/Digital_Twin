@@ -11,7 +11,10 @@ find_package(rclpy REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(customed_interfaces REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(nav_msgs REQUIRED)
+find_package(nav2_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
 find_package(ament_index_cpp REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
@@ -50,7 +53,10 @@ target_link_libraries(request_STOD_server data_logger)
 ament_target_dependencies(request_STOD_server rclcpp std_msgs nlohmann_json ament_index_cpp customed_interfaces)
 
 add_executable(request_history_client src/request_history_client.cpp)
-ament_target_dependencies(request_history_client rclcpp std_msgs nlohmann_json ament_index_cpp customed_interfaces rclcpp)
+ament_target_dependencies(request_history_client rclcpp std_msgs nlohmann_json ament_index_cpp customed_interfaces)
+
+add_executable(odom_alignment src/odom_alignment.cpp)
+ament_target_dependencies(odom_alignment rclcpp geometry_msgs nav_msgs tf2 tf2_geometry_msgs)
 
 install(TARGETS
   data_logger
@@ -58,6 +64,7 @@ install(TARGETS
   request_history_server
   request_STOD_server
   request_history_client
+  odom_alignment
   DESTINATION lib/${PROJECT_NAME}
 )
 
@@ -71,6 +78,13 @@ install(DIRECTORY include/
 install(
   DIRECTORY launch/
   DESTINATION share/${PROJECT_NAME}/
+)
+
+# Install Python script properly
+install(
+  PROGRAMS
+  navigation/navigation.py 
+  DESTINATION lib/${PROJECT_NAME}
 )
 
 if(BUILD_TESTING)

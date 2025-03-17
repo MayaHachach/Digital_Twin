@@ -13,9 +13,12 @@
   <depend>rclcpp</depend>
   <depend>customed_interfaces</depend>
   <depend>std_msgs</depend>
-  <depend>nav_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>nav2_msgs</depend>
   <depend>ament_index_cpp</depend>
   <depend>nlohmann_json</depend>
+
+  <exec_depend>nav2_simple_commander</exec_depend>
 
   <exec_depend>launch</exec_depend>
   <exec_depend>launch_ros</exec_depend>
