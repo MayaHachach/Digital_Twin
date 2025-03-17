@@ -16,8 +16,9 @@ class CommunicatorNode : public rclcpp::Node
 {
 private:
     rclcpp::Subscription<customed_interfaces::msg::Object>::SharedPtr hololens_object_subscriber;
+    rclcpp::Subscription<customed_interfaces::msg::Object>::SharedPtr human_correction_subscriber;
     rclcpp::Subscription<customed_interfaces::msg::Temp>::SharedPtr temp_response_subscriber;
-    rclcpp::Publisher<customed_interfaces::msg::Object>::SharedPtr publisher_;
+    rclcpp::Publisher<customed_interfaces::msg::Object>::SharedPtr omniverse_publisher;
     rclcpp::Publisher<customed_interfaces::msg::Object>::SharedPtr object_locations_publisher;
     rclcpp::Publisher<customed_interfaces::msg::Temp>::SharedPtr temp_count_publisher;
     rclcpp::TimerBase::SharedPtr timer_;
@@ -50,17 +51,10 @@ private:
 
     std::unordered_map<std::string, topics_struct> odom_topics =
         {
-            {"/transformed_pose", {"Husky"}},
+            {"/transformed_odom", {"Husky"}},
             {"/husky2/odom", {"Husky"}},
             {"kobuki/odom", {"Kobuki"}}};
 
-    // let the map contain a struct that contains the message and id which is number of objects that have the same name like 2 huskies so id 1 and id 2
-    // struct object_map_struct
-    // {
-    //     int id;
-    //     string topic_name;
-    //     customed_interfaces::msg::Object message;
-    // };
 
     std::unordered_map<std::string, vector<DataLogger::object_map_struct>> object_map_;
 
@@ -70,6 +64,8 @@ private:
     void objectCallback(const customed_interfaces::msg::Object::SharedPtr msg);
     // void logAllObjects();
     std::string GetTimestamp();
+    void InitializePublishers();
+    void InitializeSubscribers();
     bool isMessageEqual(const customed_interfaces::msg::Object &msg1, const customed_interfaces::msg::Object &msg2);
     bool isMessageEqual(const customed_interfaces::msg::Temp &msg1, const customed_interfaces::msg::Temp &msg2);
     bool isPoseEqual(const geometry_msgs::msg::Pose &msg1, const geometry_msgs::msg::Pose &msg2);

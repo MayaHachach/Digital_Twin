@@ -6,13 +6,35 @@ CommunicatorNode::CommunicatorNode() : Node("communicator_node"), logger_("initi
     object_map_ = logger_.loadLastIterationToMap();
     temp_map = temp_logger.loadLastTempToMap();
 
+    InitializePublishers();
+
     hololens_object_subscriber = this->create_subscription<customed_interfaces::msg::Object>(
         "/hololensObject", 10,
         std::bind(&CommunicatorNode::objectCallback, this, std::placeholders::_1));
 
-    publisher_ = this->create_publisher<customed_interfaces::msg::Object>("/omniverseObject", 10);
-    object_locations_publisher = this->create_publisher<customed_interfaces::msg::Object>("/objectLocations", 10);
-    temp_count_publisher = this->create_publisher<customed_interfaces::msg::Temp>("/tempCount", 10);
+    human_correction_subscriber = this->create_subscription<customed_interfaces::msg::Object>(
+        "/humanCorrection", 10, [this](const customed_interfaces::msg::Object::SharedPtr human_corrected_msg)
+        {
+        auto object_class = object_map_.find(human_corrected_msg->name);
+
+        if (object_class == object_map_.end()){
+            RCLCPP_INFO(this->get_logger(), "Class %s was not found in the object map", human_corrected_msg->name.c_str());
+            return;
+        }
+        for (auto &object : object_class->second){
+            if (object.message.id != human_corrected_msg->id){
+                continue;
+            }
+            object.message.pose = human_corrected_msg->pose;
+
+            RCLCPP_INFO(this->get_logger(), "%s %d pose was updated to [%.2f, %.2f, %.2f]",
+                human_corrected_msg->name.c_str(), human_corrected_msg->id, human_corrected_msg->pose.position.x, human_corrected_msg->pose.position.y, human_corrected_msg->pose.position.z);
+            
+            omniverse_publisher->publish(object.message);
+            logger_.logAllObjects(object_map_);
+            break;
+        } });
+
     temp_response_subscriber = this->create_subscription<customed_interfaces::msg::Temp>(
         "/tempResponse", 10, [this](const customed_interfaces::msg::Temp::SharedPtr temp_response_msg)
         {
@@ -49,7 +71,7 @@ CommunicatorNode::CommunicatorNode() : Node("communicator_node"), logger_("initi
                     // Copy pose from the last object
                     i.message.pose = temp_it->second.back().pose;
 
-                    publisher_->publish(i.message);
+                    omniverse_publisher->publish(i.message);
 
                     // Remove only the last object
                     temp_it->second.pop_back();
@@ -133,7 +155,7 @@ CommunicatorNode::CommunicatorNode() : Node("communicator_node"), logger_("initi
                         return;
                     }
                     i.message.pose = msg->pose.pose;
-                    publisher_->publish(i.message);
+                    omniverse_publisher->publish(i.message);
                     logger_.logAllObjects(object_map_);
                 }
             }));
@@ -171,16 +193,6 @@ void CommunicatorNode::objectCallback(const customed_interfaces::msg::Object::Sh
 
         if (!isPoseEqual(object.message.pose, message->pose))
         {
-            // RCLCPP_INFO(this->get_logger(),
-            //             "object.message.pose = [%.2f, %.2f, %.2f] | orientation = [%.2f, %.2f, %.2f, %.2f]",
-            //             object.message.pose.position.x, object.message.pose.position.y, object.message.pose.position.z,
-            //             object.message.pose.orientation.w, object.message.pose.orientation.x, object.message.pose.orientation.y, object.message.pose.orientation.z);
-
-            // RCLCPP_INFO(this->get_logger(),
-            //             "message->pose = [%.2f, %.2f, %.2f] | orientation = [%.2f, %.2f, %.2f, %.2f]",
-            //             message->pose.position.x, message->pose.position.y, message->pose.position.z,
-            //             message->pose.orientation.w, message->pose.orientation.x, message->pose.orientation.y, message->pose.orientation.z);
-
             continue;
         }
 
@@ -216,7 +228,7 @@ void CommunicatorNode::objectCallback(const customed_interfaces::msg::Object::Sh
     {
         RCLCPP_INFO(this->get_logger(), "There is only one %s, updating its pose...", message->name.c_str());
         object_map_.at(message->name)[0].message.pose = message->pose;
-        publisher_->publish(object_map_[message->name][0].message);
+        omniverse_publisher->publish(object_map_[message->name][0].message);
         logger_.logAllObjects(object_map_);
         return;
     }
@@ -267,7 +279,7 @@ void CommunicatorNode::objectCallback(const customed_interfaces::msg::Object::Sh
         }
 
         // publish to omniverse
-        // publisher_->publish(new_temp_object);
+        // omniverse_publisher->publish(new_temp_object);
         temp_logger.logTempObjects(temp_map);
 
         return;
@@ -281,6 +293,13 @@ void CommunicatorNode::objectCallback(const customed_interfaces::msg::Object::Sh
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void CommunicatorNode::InitializePublishers()
+{
+    omniverse_publisher = this->create_publisher<customed_interfaces::msg::Object>("/omniverseObject", 10);
+    object_locations_publisher = this->create_publisher<customed_interfaces::msg::Object>("/objectLocations", 10);
+    temp_count_publisher = this->create_publisher<customed_interfaces::msg::Temp>("/tempCount", 10);
+}
 
 DataLogger::object_map_struct CommunicatorNode::AddNewObject(const customed_interfaces::msg::Object &message)
 {
@@ -326,7 +345,7 @@ DataLogger::object_map_struct CommunicatorNode::AddNewObject(const customed_inte
 
     // auto message_with_id = std::make_shared<customed_interfaces::msg::Object>(message);
     // message_with_id->name = message.name + std::to_string(new_object.message.id);
-    publisher_->publish(new_object.message);
+    omniverse_publisher->publish(new_object.message);
     return new_object;
 }
 
@@ -408,8 +427,3 @@ int main(int argc, char *argv[])
     rclcpp::shutdown();
     return 0;
 }
-
-// TODO: edit the odom_topics to remove names (husky and so on)
-// TODO: do the object_count thing
-// TODO: if hololens said something and odom said something else, edit the odom to encounter for the error
-// TODO: take the z once, dont update it again
