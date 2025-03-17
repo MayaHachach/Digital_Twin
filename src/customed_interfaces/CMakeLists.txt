@@ -31,6 +31,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Temp.msg"
 
   "srv/RequestHistory.srv"
+  "srv/RequestSTOD.srv"
 
   DEPENDENCIES sensor_msgs geometry_msgs octomap_msgs std_msgs rclcpp
  )
