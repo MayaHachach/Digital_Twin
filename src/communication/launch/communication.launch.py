@@ -18,13 +18,6 @@ def generate_launch_description():
         output='screen'
     )
     
-    request_STOD_server = Node(
-        package='communication',
-        executable='request_STOD_server',
-        name='request_STOD_server',
-        output='screen'
-    )
-    
     husky_odom_alignment = Node(
         package='communication',
         executable='odom_alignment',
@@ -38,9 +31,6 @@ def generate_launch_description():
     ld.add_action(communicator_node)
     
     ld.add_action(request_history_server)
-    
-    #! run this node separately if you think you're gonna be requesting the STOD more than once from omniverse.
-    ld.add_action(request_STOD_server)
     
     #! comment this if you're not using the husky.
     ld.add_action(husky_odom_alignment)
