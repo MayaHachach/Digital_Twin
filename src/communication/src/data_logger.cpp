@@ -32,10 +32,6 @@ void DataLogger::initializeJsonFile()
             throw std::runtime_error("Failed to create log file.");
         }
     }
-    else
-    {
-        RCLCPP_INFO(rclcpp::get_logger("DataLogger"), "JSON log file already exists: %s", log_file_path_.c_str());
-    }
 }
 
 // Method to log data
@@ -204,7 +200,6 @@ unordered_map<string, vector<DataLogger::object_map_struct>> DataLogger::loadLas
 
         // Get the last entry
         auto last_entry = *(log_data["Isaac sim data"].rbegin());
-        RCLCPP_INFO(rclcpp::get_logger("Datalogger"), "Loaded last entry from JSON file.");
 
         // Parse the objects into the map
         for (const auto &obj : last_entry["objects"])
@@ -261,7 +256,6 @@ unordered_map<string, vector<customed_interfaces::msg::Object>> DataLogger::load
 
         // Get the last entry
         auto last_entry = *(log_data["Isaac sim data"].rbegin());
-        RCLCPP_INFO(rclcpp::get_logger("Datalogger"), "Loaded last temp from JSON file.");
 
         // Parse the objects into the map
         for (const auto &obj : last_entry["objects"])
@@ -284,7 +278,8 @@ unordered_map<string, vector<customed_interfaces::msg::Object>> DataLogger::load
             temp_map[temp_msg.name].push_back(temp_msg);  
         }
 
-        RCLCPP_INFO(rclcpp::get_logger("Datalogger"), "Initialized map with %zu objects from JSON.", temp_map.size());
+        RCLCPP_INFO(rclcpp::get_logger("Datalogger"), "Initialized temp map with %zu objects from JSON.", temp_map.size());
+        
     }
     catch (const std::exception &e)
     {
