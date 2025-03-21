@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.10)
 project(communication)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -12,13 +12,18 @@ find_package(rclcpp REQUIRED)
 find_package(customed_interfaces REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(nav2_msgs REQUIRED)
+find_package(nav_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(ament_index_cpp REQUIRED)
 find_package(nlohmann_json REQUIRED)
+find_package(husky_msgs REQUIRED)
+find_package(Eigen3 REQUIRED)
 
-include_directories(include)
+
+# target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${EIGEN3_INCLUDE_DIRS})
+include_directories(include ${rclcpp_INCLUDE_DIRS} ${nav_msgs_INCLUDE_DIRS} ${geometry_msgs_INCLUDE_DIRS})
 
 add_library(data_logger src/data_logger.cpp)
 ament_target_dependencies(data_logger rclcpp ament_index_cpp nlohmann_json customed_interfaces)
@@ -30,7 +35,9 @@ target_include_directories(data_logger PUBLIC
 
 add_executable(communicator src/communicator.cpp)
 target_link_libraries(communicator data_logger)
-ament_target_dependencies(communicator rclcpp nlohmann_json customed_interfaces geometry_msgs nav_msgs)
+# target_include_directories(communicator PUBLIC ${EIGEN3_INCLUDE_DIRS})
+# target_link_libraries(communicator Eigen3::Eigen)
+ament_target_dependencies(communicator rclcpp nlohmann_json customed_interfaces geometry_msgs nav_msgs tf2 tf2_geometry_msgs Eigen3)
 
 target_include_directories(communicator PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -48,23 +55,23 @@ target_include_directories(communicator PUBLIC
 add_executable(request_history_server src/request_history_server.cpp)
 ament_target_dependencies(request_history_server rclcpp std_msgs nlohmann_json ament_index_cpp customed_interfaces)
 
-add_executable(request_STOD_server src/request_STOD_server.cpp)
-target_link_libraries(request_STOD_server data_logger)
-ament_target_dependencies(request_STOD_server rclcpp std_msgs nlohmann_json ament_index_cpp customed_interfaces)
+# add_executable(request_STOD_server src/request_STOD_server.cpp)
+# target_link_libraries(request_STOD_server data_logger)
+# ament_target_dependencies(request_STOD_server rclcpp std_msgs nlohmann_json ament_index_cpp customed_interfaces)
 
-add_executable(request_history_client src/request_history_client.cpp)
+add_executable(request_history_client references/request_history_client.cpp)
 ament_target_dependencies(request_history_client rclcpp std_msgs nlohmann_json ament_index_cpp customed_interfaces)
 
-add_executable(odom_alignment src/odom_alignment.cpp)
-ament_target_dependencies(odom_alignment rclcpp geometry_msgs nav_msgs tf2 tf2_geometry_msgs)
+add_executable(husky_manager src/husky_manager.cpp)
+ament_target_dependencies(husky_manager rclcpp geometry_msgs nav_msgs tf2 tf2_geometry_msgs customed_interfaces husky_msgs)
 
 install(TARGETS
   data_logger
   communicator
   request_history_server
-  request_STOD_server
+  # request_STOD_server
   request_history_client
-  odom_alignment
+  husky_manager
   DESTINATION lib/${PROJECT_NAME}
 )
 
