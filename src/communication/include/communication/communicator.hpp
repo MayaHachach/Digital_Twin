@@ -55,22 +55,26 @@ private:
             {"/husky2/odom", {"Husky"}},
             {"kobuki/odom", {"Kobuki"}}};
 
-
     std::unordered_map<std::string, vector<DataLogger::object_map_struct>> object_map_;
 
     unordered_map<string, vector<customed_interfaces::msg::Object>> temp_map;
     std::vector<std::string> offline_objects = {"Chair", "MonitorEcho", "RedChair"};
 
+    //? Methods
     void objectCallback(const customed_interfaces::msg::Object::SharedPtr msg);
     // void logAllObjects();
-    std::string GetTimestamp();
+    // std::string GetTimestamp();
     void InitializePublishers();
-    void InitializeSubscribers();
+    // void InitializeSubscribers();
     bool isMessageEqual(const customed_interfaces::msg::Object &msg1, const customed_interfaces::msg::Object &msg2);
     bool isMessageEqual(const customed_interfaces::msg::Temp &msg1, const customed_interfaces::msg::Temp &msg2);
     bool isPoseEqual(const geometry_msgs::msg::Pose &msg1, const geometry_msgs::msg::Pose &msg2);
     DataLogger::object_map_struct AddNewObject(const customed_interfaces::msg::Object &message);
-    // customed_interfaces::msg::Object getMsgWithID(const customed_interfaces::msg::Object &message);
+    // services methods
+    void publishHololensSTOD();
+    void publishOmniverseSTOD();
+
+    Eigen::Matrix4d poseToTransformation(const geometry_msgs::msg::Pose &pose);
 
 public:
     CommunicatorNode(/* args */);
