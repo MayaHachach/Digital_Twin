@@ -7,16 +7,23 @@ CommunicatorNode::CommunicatorNode() : Node("communicator_node"), logger_("initi
     temp_map = temp_logger.loadLastTempToMap();
 
     InitializePublishers();
+    // InitializeServices();
+    STOD_service = this->create_service<customed_interfaces::srv::RequestSTOD>(
+        "request_STOD",
+        std::bind(&CommunicatorNode::handleRequest, this, std::placeholders::_1, std::placeholders::_2));
+
+    STOD_hololens_publisher = this->create_publisher<customed_interfaces::msg::Object>("/hololensSTOD", 10);
+    STOD_omniverse_publisher = this->create_publisher<customed_interfaces::msg::Object>("/omniverseSTOD", 10);
 
     hololens_object_subscriber = this->create_subscription<customed_interfaces::msg::Object>(
         "/hololensObject", 10,
+    
         std::bind(&CommunicatorNode::objectCallback, this, std::placeholders::_1));
 
     human_correction_subscriber = this->create_subscription<customed_interfaces::msg::Object>(
         "/humanCorrection", 10, [this](const customed_interfaces::msg::Object::SharedPtr human_corrected_msg)
         {
         auto object_class = object_map_.find(human_corrected_msg->name);
-
         if (object_class == object_map_.end()){
             RCLCPP_INFO(this->get_logger(), "Class %s was not found in the object map", human_corrected_msg->name.c_str());
             return;
@@ -25,6 +32,7 @@ CommunicatorNode::CommunicatorNode() : Node("communicator_node"), logger_("initi
             if (object.message.id != human_corrected_msg->id){
                 continue;
             }
+            
             object.message.pose = human_corrected_msg->pose;
 
             RCLCPP_INFO(this->get_logger(), "%s %d pose was updated to [%.2f, %.2f, %.2f]",
@@ -33,6 +41,7 @@ CommunicatorNode::CommunicatorNode() : Node("communicator_node"), logger_("initi
             omniverse_publisher->publish(object.message);
             logger_.logAllObjects(object_map_);
             break;
+
         } });
 
     temp_response_subscriber = this->create_subscription<customed_interfaces::msg::Temp>(
