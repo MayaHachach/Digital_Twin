@@ -9,31 +9,46 @@
 #include <nav_msgs/msg/odometry.hpp>
 #include "customed_interfaces/msg/object.hpp" // Replace with the correct message type header
 #include "customed_interfaces/msg/temp.hpp"
+#include "customed_interfaces/srv/request_stod.hpp"
 #include <cmath>
 
 using namespace std;
 class CommunicatorNode : public rclcpp::Node
 {
 private:
+    //? subscribers
     rclcpp::Subscription<customed_interfaces::msg::Object>::SharedPtr hololens_object_subscriber;
     rclcpp::Subscription<customed_interfaces::msg::Object>::SharedPtr human_correction_subscriber;
     rclcpp::Subscription<customed_interfaces::msg::Temp>::SharedPtr temp_response_subscriber;
+    vector<rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr> robot_odom_subscribers_;
+
+    //? publishers
     rclcpp::Publisher<customed_interfaces::msg::Object>::SharedPtr omniverse_publisher;
     rclcpp::Publisher<customed_interfaces::msg::Object>::SharedPtr object_locations_publisher;
     rclcpp::Publisher<customed_interfaces::msg::Temp>::SharedPtr temp_count_publisher;
+
+    //? services
+    rclcpp::Publisher<customed_interfaces::msg::Object>::SharedPtr STOD_hololens_publisher;
+    rclcpp::Publisher<customed_interfaces::msg::Object>::SharedPtr STOD_omniverse_publisher;
+    rclcpp::Service<customed_interfaces::srv::RequestSTOD>::SharedPtr STOD_service;
+    std::mutex request_mutex_;
+    bool request_processed_;
+    int request_processed_counter = 0;
+
+    void handleRequest(const std::shared_ptr<customed_interfaces::srv::RequestSTOD::Request> request_,
+                       std::shared_ptr<customed_interfaces::srv::RequestSTOD::Response> response_);
+
+    //? variables
     rclcpp::TimerBase::SharedPtr timer_;
     customed_interfaces::msg::Object::SharedPtr last_message_;
     customed_interfaces::msg::Temp::SharedPtr previous_message;
     customed_interfaces::msg::Object::SharedPtr message;
     DataLogger logger_;
     DataLogger temp_logger;
-
     double threshold_;
     double euclidean_threshold;
     double angular_threshold;
     float temp_id;
-
-    vector<rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr> robot_odom_subscribers_;
 
     std::unordered_map<std::string, int> object_counts{
         {"Husky", 2},
