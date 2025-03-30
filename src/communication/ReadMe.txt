@@ -20,3 +20,6 @@ Where:
     Todom−1Todom−1​ is the inverse of the odometry pose transformation.
 
 This transformation will map future odometry updates into the corrected frame.
+
+
+//! important note, human correction should only be applied on objects while in static state (cant be applied on objects while theyre moving)

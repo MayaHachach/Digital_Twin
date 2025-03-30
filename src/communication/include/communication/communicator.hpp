@@ -11,6 +11,11 @@
 #include "customed_interfaces/msg/temp.hpp"
 #include "customed_interfaces/srv/request_stod.hpp"
 #include <cmath>
+// for transformation
+#include <eigen3/Eigen/Dense>
+#include <eigen3/Eigen/Geometry>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2/LinearMath/Matrix3x3.h>
 
 using namespace std;
 class CommunicatorNode : public rclcpp::Node
@@ -60,8 +65,10 @@ private:
     struct topics_struct
     {
         string class_name;
-        int id{0};
+        int id;
         nav_msgs::msg::Odometry odom_msg;
+        Eigen::Matrix4d T_human_correction = Eigen::Matrix4d::Identity();
+        Eigen::Matrix4d T_global_frame = Eigen::Matrix4d::Identity();
     };
 
     std::unordered_map<std::string, topics_struct> odom_topics =
@@ -80,16 +87,24 @@ private:
     // void logAllObjects();
     // std::string GetTimestamp();
     void InitializePublishers();
+    void StatusSubscribers();
+    void PrintSTOD();
     // void InitializeSubscribers();
     bool isMessageEqual(const customed_interfaces::msg::Object &msg1, const customed_interfaces::msg::Object &msg2);
     bool isMessageEqual(const customed_interfaces::msg::Temp &msg1, const customed_interfaces::msg::Temp &msg2);
     bool isPoseEqual(const geometry_msgs::msg::Pose &msg1, const geometry_msgs::msg::Pose &msg2);
+    bool isObjectInSTOD(const std::string &object_class_name, const int &object_id);
     DataLogger::object_map_struct AddNewObject(const customed_interfaces::msg::Object &message);
     // services methods
     void publishHololensSTOD();
     void publishOmniverseSTOD();
 
     Eigen::Matrix4d poseToTransformation(const geometry_msgs::msg::Pose &pose);
+    nav_msgs::msg::Odometry TransformationToPose(const Eigen::Matrix4d transformation_matrix);
+
+    void printMatrix(const Eigen::Matrix4d &matrix, const std::string &label);
+
+
 
 public:
     CommunicatorNode(/* args */);

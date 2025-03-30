@@ -5,6 +5,7 @@ CommunicatorNode::CommunicatorNode() : Node("communicator_node"), logger_("initi
     threshold_ = 0.1; // Allow small floating-point differences
     object_map_ = logger_.loadLastIterationToMap();
     temp_map = temp_logger.loadLastTempToMap();
+    PrintSTOD();
 
     InitializePublishers();
     // InitializeServices();
@@ -23,26 +24,105 @@ CommunicatorNode::CommunicatorNode() : Node("communicator_node"), logger_("initi
     human_correction_subscriber = this->create_subscription<customed_interfaces::msg::Object>(
         "/humanCorrection", 10, [this](const customed_interfaces::msg::Object::SharedPtr human_corrected_msg)
         {
-        auto object_class = object_map_.find(human_corrected_msg->name);
-        if (object_class == object_map_.end()){
+            auto it = object_map_.find(human_corrected_msg->name);
+            //TODO: create a function named isObjectFound and create one for a class and one for a class and id like this one
+            if (it == object_map_.end() || human_corrected_msg->id - 1 >= it->second.size())
+            {
+                // The class name wasn't found in the map
             RCLCPP_INFO(this->get_logger(), "Class %s was not found in the object map", human_corrected_msg->name.c_str());
             return;
         }
-        for (auto &object : object_class->second){
-            if (object.message.id != human_corrected_msg->id){
-                continue;
-            }
-            
-            object.message.pose = human_corrected_msg->pose;
+        
+            // class is found
+            auto &object = object_map_.at(human_corrected_msg->name)[human_corrected_msg->id - 1];
 
-            RCLCPP_INFO(this->get_logger(), "%s %d pose was updated to [%.2f, %.2f, %.2f]",
+            if (object.topic_name != "")
+            { // online object that has a topic
+                // find odom_topic
+                auto odometry_topic = odom_topics.find(object.topic_name);
+
+                // calculate transformation matrix
+                // Eigen::Matrix4d T_odom = poseToTransformation(odometry_topic->second.odom_msg.pose.pose);
+                Eigen::Matrix4d T_object = poseToTransformation(object.message.pose);
+                Eigen::Matrix4d T_corrected = poseToTransformation(human_corrected_msg->pose);
+
+                // Compute the correction transformation
+                odometry_topic->second.T_human_correction = T_corrected * T_object.inverse();
+                RCLCPP_INFO(this->get_logger(), "human correction was calculated by multiplying T_corrected * T_object.inverse()");
+                printMatrix(T_corrected, "T_corrected: ");
+                printMatrix(T_object.inverse(), "T_object: ");
+                printMatrix(odometry_topic->second.T_human_correction, "T_human_correction: ");
+                
+            }
+
+            RCLCPP_INFO(this->get_logger(), "Human agent suggested a correction to %s %d to position [%.2f, %.2f, %.2f]", 
                 human_corrected_msg->name.c_str(), human_corrected_msg->id, human_corrected_msg->pose.position.x, human_corrected_msg->pose.position.y, human_corrected_msg->pose.position.z);
             
-            omniverse_publisher->publish(object.message);
-            logger_.logAllObjects(object_map_);
-            break;
 
-        } });
+            // replace the current pose with the corrected pose
+            object.message.pose = human_corrected_msg->pose; // applies for both online and offline objects
+            PrintSTOD();
+            omniverse_publisher->publish(object.message);
+            logger_.logAllObjects(object_map_); });
+
+        for (auto &pair : odom_topics)
+    { // fill the odom_msg in odom_topics map
+        robot_odom_subscribers_.push_back(this->create_subscription<nav_msgs::msg::Odometry>(
+            pair.first, 10,
+            [this, &pair](const nav_msgs::msg::Odometry::SharedPtr msg)
+            {
+                // find the corresponding object
+                if (!isObjectInSTOD(pair.second.class_name, pair.second.id))
+                    return;
+                auto &object = object_map_.at(pair.second.class_name)[pair.second.id - 1];
+                object.topic_name = pair.first;
+
+                Eigen::Matrix4d T_odom = poseToTransformation(msg->pose.pose);
+
+                // consider the case of robot shutdown and system shutdown
+                if (pair.second.T_global_frame.isIdentity() || T_odom.isIdentity()) // at the initialization of the robot
+                {
+                    Eigen::Matrix4d T_object = poseToTransformation(object.message.pose);
+                    // calculate the transformation of the odom from local frame to global frame
+                    pair.second.T_global_frame = T_object * T_odom.inverse();
+
+                    // Reset human correction since it's already applied in the object pose
+                    pair.second.T_human_correction = Eigen::Matrix4d::Identity();
+                    RCLCPP_INFO(this->get_logger(), "T_global frame was recalculated by T_object * T_odom.inverse() and T_human_correction was reset");
+                    printMatrix(T_object, "T_object: ");
+                    printMatrix(T_odom.inverse(), "T_odom.inverse(): ");
+                    printMatrix(pair.second.T_global_frame, "T_global_frame: ");
+
+                }
+
+                // apply the transformation to the odom msg and store it in the odom_msg
+                Eigen::Matrix4d T_correct_odom = pair.second.T_human_correction * pair.second.T_global_frame * T_odom;
+                RCLCPP_INFO(this->get_logger(), "T_correct odom was multiplied by human correcrion and global frame");
+                RCLCPP_INFO(this->get_logger(), "pair.second.T_human_correction * pair.second.T_global_frame * T_odom");
+                printMatrix(pair.second.T_human_correction, "T_human_correction: ");
+                printMatrix(pair.second.T_global_frame, "T_global_frame: ");
+                printMatrix(T_odom, "T_odom: ");
+                printMatrix(T_correct_odom, "T_correct_odom: ");
+
+
+                pair.second.odom_msg = TransformationToPose(T_correct_odom);
+                RCLCPP_INFO(this->get_logger(), "T_correct_odom was filled in pair.second.odom_msg");
+
+                // update the object pose in the STOD when the pose is updated
+                if (isPoseEqual(object.message.pose, pair.second.odom_msg.pose.pose))
+                {
+                    return;
+                }
+                object.message.pose = pair.second.odom_msg.pose.pose;
+
+                // publish the updated object
+                omniverse_publisher->publish(object.message);
+                PrintSTOD();
+            logger_.logAllObjects(object_map_);
+            }));
+    }
+
+
 
     temp_response_subscriber = this->create_subscription<customed_interfaces::msg::Temp>(
         "/tempResponse", 10, [this](const customed_interfaces::msg::Temp::SharedPtr temp_response_msg)
@@ -118,57 +198,6 @@ CommunicatorNode::CommunicatorNode() : Node("communicator_node"), logger_("initi
                                 obj.id, obj.pose.position.x, obj.pose.position.y, obj.pose.position.z);
                 }
             } });
-
-    for (auto &pair : odom_topics)
-    { // fill the odom_msg in odom_topics map
-        robot_odom_subscribers_.push_back(this->create_subscription<nav_msgs::msg::Odometry>(
-            pair.first, 10,
-            [this, &pair](const nav_msgs::msg::Odometry::SharedPtr msg)
-            {
-                pair.second.odom_msg = *msg;
-                // if the object_map is empty
-                auto it = object_map_.find(pair.second.class_name);
-                if (it == object_map_.end())
-                {
-                    RCLCPP_INFO(this->get_logger(), "Class name %s not found in object_map_. Skipping.", pair.second.class_name.c_str());
-                    return;
-                }
-                // if the topic_name is not yet linked to any object
-                if (pair.second.id == 0)
-                {
-                    // search if that object is already available
-                    //  auto it = object_map_.find(pair.second.class_name);
-                    for (auto &i : it->second)
-                    {
-                        if (isPoseEqual(i.message.pose, msg->pose.pose))
-                        {
-                            RCLCPP_INFO(this->get_logger(), "topic will be linked with hololens object %s, and topic name %s", i.message.name.c_str(), pair.first.c_str());
-                            pair.second.id = i.message.id;
-                            i.topic_name = pair.first;
-                        }
-                    }
-                    return;
-                }
-                // fill the object_map with its corresponding odom_msg from its odom_topic
-                // auto it = object_map_.find(pair.second.class_name);
-                for (auto &i : it->second)
-                {
-                    if (pair.second.id != i.message.id)
-                    {
-                        continue;
-                    }
-
-                    if (isPoseEqual(i.message.pose, msg->pose.pose))
-                    {
-                        RCLCPP_INFO(this->get_logger(), "pose is equal for %s", i.message.name.c_str());
-                        return;
-                    }
-                    i.message.pose = msg->pose.pose;
-                    omniverse_publisher->publish(i.message);
-                    logger_.logAllObjects(object_map_);
-                }
-            }));
-    }
 }
 
 void CommunicatorNode::objectCallback(const customed_interfaces::msg::Object::SharedPtr msg)
@@ -307,6 +336,8 @@ void CommunicatorNode::InitializePublishers()
 {
     omniverse_publisher = this->create_publisher<customed_interfaces::msg::Object>("/omniverseObject", 10);
     object_locations_publisher = this->create_publisher<customed_interfaces::msg::Object>("/objectLocations", 10);
+STOD_hololens_publisher = this->create_publisher<customed_interfaces::msg::Object>("/hololensSTOD", 10);
+    STOD_omniverse_publisher = this->create_publisher<customed_interfaces::msg::Object>("/omniverseSTOD", 10);
     temp_count_publisher = this->create_publisher<customed_interfaces::msg::Temp>("/tempCount", 10);
 }
 
@@ -341,7 +372,14 @@ DataLogger::object_map_struct CommunicatorNode::AddNewObject(const customed_inte
     RCLCPP_INFO(this->get_logger(), "Added new object: %s with id %d", message.name.c_str(), new_object.message.id);
 
     // Print the entire object_map_
-    RCLCPP_INFO(this->get_logger(), "Current Object Map:");
+    PrintSTOD();
+    omniverse_publisher->publish(new_object.message);
+    return new_object;
+}
+
+void CommunicatorNode::PrintSTOD()
+{
+    RCLCPP_INFO(this->get_logger(), "Current STOD:");
     for (const auto &pair : object_map_)
     {
         RCLCPP_INFO(this->get_logger(), "Object Type: %s", pair.first.c_str());
@@ -351,11 +389,6 @@ DataLogger::object_map_struct CommunicatorNode::AddNewObject(const customed_inte
                         obj.message.id, obj.message.pose.position.x, obj.message.pose.position.y, obj.message.pose.position.z, obj.topic_name.c_str());
         }
     }
-
-    // auto message_with_id = std::make_shared<customed_interfaces::msg::Object>(message);
-    // message_with_id->name = message.name + std::to_string(new_object.message.id);
-    omniverse_publisher->publish(new_object.message);
-    return new_object;
 }
 
 bool CommunicatorNode::isMessageEqual(const customed_interfaces::msg::Object &msg1, const customed_interfaces::msg::Object &msg2)
@@ -426,6 +459,130 @@ bool CommunicatorNode::isPoseEqual(const geometry_msgs::msg::Pose &msg1, const g
     else
     {
         return distance < euclidean_threshold;
+    }
+}
+
+Eigen::Matrix4d CommunicatorNode::poseToTransformation(const geometry_msgs::msg::Pose &pose)
+{
+    Eigen::Matrix4d T = Eigen::Matrix4d::Identity();
+
+    // Set translation
+    T(0, 3) = pose.position.x;
+    T(1, 3) = pose.position.y;
+    T(2, 3) = pose.position.z;
+
+    // Convert quaternion to rotation matrix
+    tf2::Quaternion q(pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w);
+    tf2::Matrix3x3 rotation_matrix(q);
+
+    for (int i = 0; i < 3; ++i)
+    {
+        for (int j = 0; j < 3; ++j)
+        {
+            T(i, j) = rotation_matrix[i][j];
+        }
+    }
+
+    return T;
+}
+
+nav_msgs::msg::Odometry CommunicatorNode::TransformationToPose(const Eigen::Matrix4d transformation_matrix)
+{
+    // Convert back to a Pose message
+    nav_msgs::msg::Odometry corrected_pose;
+    corrected_pose.pose.pose.position.x = transformation_matrix(0, 3);
+    corrected_pose.pose.pose.position.y = transformation_matrix(1, 3);
+    corrected_pose.pose.pose.position.z = transformation_matrix(2, 3);
+
+    // Extract rotation as quaternion
+    Eigen::Matrix3d R_corrected = transformation_matrix.block<3, 3>(0, 0);
+    Eigen::Quaterniond q_corrected(R_corrected);
+    corrected_pose.pose.pose.orientation.x = q_corrected.x();
+    corrected_pose.pose.pose.orientation.y = q_corrected.y();
+    corrected_pose.pose.pose.orientation.z = q_corrected.z();
+    corrected_pose.pose.pose.orientation.w = q_corrected.w();
+
+    return corrected_pose;
+}
+
+void CommunicatorNode::handleRequest(const std::shared_ptr<customed_interfaces::srv::RequestSTOD::Request> request_,
+                                     std::shared_ptr<customed_interfaces::srv::RequestSTOD::Response> response_)
+{
+    std::lock_guard<std::mutex> lock(request_mutex_); // While the callback function is running, no other thread can access variables.
+
+    if (request_->agent_name == "omniverse")
+    {
+        // Process omniverse requests only once. (because omnivere cant send a request only once on startup, it keeps on sending the request while it is required to be sent only once)
+        if (request_processed_)
+        {
+            if (request_processed_counter == 0)
+            {
+                RCLCPP_WARN(this->get_logger(), "STOD was sent previously to omniverse, you need to rerun the server for another omniverse request.");
+                request_processed_counter = 1;
+            }
+            response_->success = false;
+            return;
+        }
+
+        publishOmniverseSTOD();
+        request_processed_ = true; // Mark as processed
+        response_->success = true;
+    }
+
+    else if (request_->agent_name == "hololens")
+    {
+        publishHololensSTOD();
+        response_->success = true;
+    }
+
+    else
+    {
+        RCLCPP_WARN(this->get_logger(), "Unknown agent %s", request_->agent_name.c_str());
+        response_->success = false;
+    }
+}
+
+void CommunicatorNode::publishHololensSTOD()
+{
+    RCLCPP_INFO(this->get_logger(), "Processing request and publishing objects...");
+    for (const auto &pair : object_map_)
+    {
+        RCLCPP_INFO(this->get_logger(), "Object Type: %s", pair.first.c_str());
+        for (const auto &obj : pair.second)
+        {
+            RCLCPP_INFO(this->get_logger(), "  ID: %d, Position: [%.2f, %.2f, %.2f], Topic: %s",
+                        obj.message.id, obj.message.pose.position.x, obj.message.pose.position.y, obj.message.pose.position.z, obj.topic_name.c_str());
+            STOD_hololens_publisher->publish(obj.message);
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
+    }
+    RCLCPP_INFO(this->get_logger(), "Published %ld object_classes to /STOD", object_map_.size());
+}
+
+void CommunicatorNode::publishOmniverseSTOD()
+{
+    RCLCPP_INFO(this->get_logger(), "Processing request and publishing objects...");
+    for (const auto &pair : object_map_)
+    {
+        RCLCPP_INFO(this->get_logger(), "Object Type: %s", pair.first.c_str());
+        for (const auto &obj : pair.second)
+        {
+            RCLCPP_INFO(this->get_logger(), "  ID: %d, Position: [%.2f, %.2f, %.2f], Topic: %s",
+                        obj.message.id, obj.message.pose.position.x, obj.message.pose.position.y, obj.message.pose.position.z, obj.topic_name.c_str());
+            STOD_omniverse_publisher->publish(obj.message);
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
+    }
+    RCLCPP_INFO(this->get_logger(), "Published %ld object_classes to /STOD", object_map_.size());
+}
+
+void CommunicatorNode::printMatrix(const Eigen::Matrix4d &matrix, const std::string &label)
+{
+    RCLCPP_INFO(this->get_logger(), "%s:", label.c_str());
+    for (int i = 0; i < 4; ++i)
+    {
+        RCLCPP_INFO(this->get_logger(), "[%.3f, %.3f, %.3f, %.3f]", 
+            matrix(i, 0), matrix(i, 1), matrix(i, 2), matrix(i, 3));
     }
 }
 
