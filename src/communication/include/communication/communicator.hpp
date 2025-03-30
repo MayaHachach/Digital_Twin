@@ -84,12 +84,15 @@ private:
 
     //? Methods
     void objectCallback(const customed_interfaces::msg::Object::SharedPtr msg);
+    void humanCorrectionCallback(const customed_interfaces::msg::Object::SharedPtr msg);
+    void tempResponseCallback(const customed_interfaces::msg::Temp::SharedPtr msg);
+    
     // void logAllObjects();
     // std::string GetTimestamp();
     void InitializePublishers();
+    void InitializeSubscribers();
     void StatusSubscribers();
     void PrintSTOD();
-    // void InitializeSubscribers();
     bool isMessageEqual(const customed_interfaces::msg::Object &msg1, const customed_interfaces::msg::Object &msg2);
     bool isMessageEqual(const customed_interfaces::msg::Temp &msg1, const customed_interfaces::msg::Temp &msg2);
     bool isPoseEqual(const geometry_msgs::msg::Pose &msg1, const geometry_msgs::msg::Pose &msg2);

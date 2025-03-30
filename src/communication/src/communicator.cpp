@@ -8,62 +8,12 @@ CommunicatorNode::CommunicatorNode() : Node("communicator_node"), logger_("initi
     PrintSTOD();
 
     InitializePublishers();
-    // InitializeServices();
+    InitializeSubscribers();
+    StatusSubscribers();
+
     STOD_service = this->create_service<customed_interfaces::srv::RequestSTOD>(
         "request_STOD",
         std::bind(&CommunicatorNode::handleRequest, this, std::placeholders::_1, std::placeholders::_2));
-
-    STOD_hololens_publisher = this->create_publisher<customed_interfaces::msg::Object>("/hololensSTOD", 10);
-    STOD_omniverse_publisher = this->create_publisher<customed_interfaces::msg::Object>("/omniverseSTOD", 10);
-
-    hololens_object_subscriber = this->create_subscription<customed_interfaces::msg::Object>(
-        "/hololensObject", 10,
-    
-        std::bind(&CommunicatorNode::objectCallback, this, std::placeholders::_1));
-
-    human_correction_subscriber = this->create_subscription<customed_interfaces::msg::Object>(
-        "/humanCorrection", 10, [this](const customed_interfaces::msg::Object::SharedPtr human_corrected_msg)
-        {
-            auto it = object_map_.find(human_corrected_msg->name);
-            //TODO: create a function named isObjectFound and create one for a class and one for a class and id like this one
-            if (it == object_map_.end() || human_corrected_msg->id - 1 >= it->second.size())
-            {
-                // The class name wasn't found in the map
-            RCLCPP_INFO(this->get_logger(), "Class %s was not found in the object map", human_corrected_msg->name.c_str());
-            return;
-        }
-        
-            // class is found
-            auto &object = object_map_.at(human_corrected_msg->name)[human_corrected_msg->id - 1];
-
-            if (object.topic_name != "")
-            { // online object that has a topic
-                // find odom_topic
-                auto odometry_topic = odom_topics.find(object.topic_name);
-
-                // calculate transformation matrix
-                // Eigen::Matrix4d T_odom = poseToTransformation(odometry_topic->second.odom_msg.pose.pose);
-                Eigen::Matrix4d T_object = poseToTransformation(object.message.pose);
-                Eigen::Matrix4d T_corrected = poseToTransformation(human_corrected_msg->pose);
-
-                // Compute the correction transformation
-                odometry_topic->second.T_human_correction = T_corrected * T_object.inverse();
-                RCLCPP_INFO(this->get_logger(), "human correction was calculated by multiplying T_corrected * T_object.inverse()");
-                printMatrix(T_corrected, "T_corrected: ");
-                printMatrix(T_object.inverse(), "T_object: ");
-                printMatrix(odometry_topic->second.T_human_correction, "T_human_correction: ");
-                
-            }
-
-            RCLCPP_INFO(this->get_logger(), "Human agent suggested a correction to %s %d to position [%.2f, %.2f, %.2f]", 
-                human_corrected_msg->name.c_str(), human_corrected_msg->id, human_corrected_msg->pose.position.x, human_corrected_msg->pose.position.y, human_corrected_msg->pose.position.z);
-            
-
-            // replace the current pose with the corrected pose
-            object.message.pose = human_corrected_msg->pose; // applies for both online and offline objects
-            PrintSTOD();
-            omniverse_publisher->publish(object.message);
-            logger_.logAllObjects(object_map_); });
 
         for (auto &pair : odom_topics)
     { // fill the odom_msg in odom_topics map
@@ -121,83 +71,6 @@ CommunicatorNode::CommunicatorNode() : Node("communicator_node"), logger_("initi
             logger_.logAllObjects(object_map_);
             }));
     }
-
-
-
-    temp_response_subscriber = this->create_subscription<customed_interfaces::msg::Temp>(
-        "/tempResponse", 10, [this](const customed_interfaces::msg::Temp::SharedPtr temp_response_msg)
-        {
-            if (previous_message != nullptr && isMessageEqual(*temp_response_msg, *previous_message))
-            {
-                RCLCPP_INFO(this->get_logger(), "duplicate temp message");
-                return;
-            }
-            previous_message = temp_response_msg;
-            
-
-            RCLCPP_INFO(this->get_logger(), "%s %d pose should be updated to [%.2f, %.2f, %.2f]",
-                temp_response_msg->name.c_str(), temp_response_msg->number, temp_map.at(temp_response_msg->name).back().pose.position.x,temp_map.at(temp_response_msg->name).back().pose.position.y,temp_map.at(temp_response_msg->name).back().pose.position.z);
-            
-            auto it = object_map_.find(temp_response_msg->name);
-
-            if (it == object_map_.end())
-            {
-                RCLCPP_INFO(this->get_logger(), "temp response object wasn't found in object_map");
-                return;
-            }
-
-            for (auto &i : it->second)
-            {
-                // RCLCPP_INFO(this->get_logger(), "found");
-                
-                if (i.message.id != temp_response_msg->number)
-                {
-                    continue;
-                }
-
-                auto temp_it = temp_map.find(temp_response_msg->name);
-                if (temp_it != temp_map.end() && !temp_it->second.empty()){
-                    // Copy pose from the last object
-                    i.message.pose = temp_it->second.back().pose;
-
-                    omniverse_publisher->publish(i.message);
-
-                    // Remove only the last object
-                    temp_it->second.pop_back();
-                    RCLCPP_INFO(this->get_logger(), "Last object removed from temp_map[%s]", temp_response_msg->name.c_str());
-                    
-                    logger_.logAllObjects(object_map_);
-                    temp_logger.logTempObjects(temp_map);
-
-                    break;
-                }
-            }
-                        
-            // publish temp object counts
-            customed_interfaces::msg::Temp temp_message;
-            temp_message.name = temp_response_msg->name;
-            temp_message.number = temp_map[temp_response_msg->name].size();
-            temp_count_publisher->publish(temp_message);
-
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
-            
-            // publish object locations to hololens
-            for (auto &object : object_map_[temp_response_msg->name])
-            {
-                
-                object_locations_publisher->publish(object.message);
-            }
-
-            RCLCPP_INFO(this->get_logger(), "Current Temp Map:");
-            for (const auto &pair : temp_map)
-            {
-                RCLCPP_INFO(this->get_logger(), "Object Type: %s", pair.first.c_str());
-                for (const auto &obj : pair.second)
-                {
-                    RCLCPP_INFO(this->get_logger(), "  ID: %d, Position: [%.2f, %.2f, %.2f]",
-                                obj.id, obj.pose.position.x, obj.pose.position.y, obj.pose.position.z);
-                }
-            } });
 }
 
 void CommunicatorNode::objectCallback(const customed_interfaces::msg::Object::SharedPtr msg)
@@ -330,6 +203,113 @@ void CommunicatorNode::objectCallback(const customed_interfaces::msg::Object::Sh
     logger_.logAllObjects(object_map_);
 }
 
+void CommunicatorNode::tempResponseCallback(const customed_interfaces::msg::Temp::SharedPtr temp_response_msg)
+{
+    if (previous_temp_message != nullptr && isMessageEqual(*temp_response_msg, *previous_temp_message))
+    {
+        RCLCPP_INFO(this->get_logger(), "duplicate temp message");
+        return;
+    }
+    previous_temp_message = temp_response_msg;
+
+    RCLCPP_INFO(this->get_logger(), "%s %d pose should be updated to [%.2f, %.2f, %.2f]",
+                temp_response_msg->name.c_str(), temp_response_msg->number, temp_map.at(temp_response_msg->name).back().pose.position.x, temp_map.at(temp_response_msg->name).back().pose.position.y, temp_map.at(temp_response_msg->name).back().pose.position.z);
+
+    auto it = object_map_.find(temp_response_msg->name);
+
+    if (it == object_map_.end())
+    {
+        RCLCPP_INFO(this->get_logger(), "temp response object wasn't found in object_map");
+        return;
+    }
+
+    for (auto &i : it->second)
+    {
+        // RCLCPP_INFO(this->get_logger(), "found");
+
+        if (i.message.id != temp_response_msg->number)
+        {
+            continue;
+        }
+
+        auto temp_it = temp_map.find(temp_response_msg->name);
+        if (temp_it != temp_map.end() && !temp_it->second.empty())
+        {
+            // Copy pose from the last object
+            i.message.pose = temp_it->second.back().pose;
+
+            omniverse_publisher->publish(i.message);
+
+            // Remove only the last object
+            temp_it->second.pop_back();
+            RCLCPP_INFO(this->get_logger(), "Last object removed from temp_map[%s]", temp_response_msg->name.c_str());
+
+            logger_.logAllObjects(object_map_);
+            temp_logger.logTempObjects(temp_map);
+
+            break;
+        }
+    }
+
+    // publish temp object counts
+    customed_interfaces::msg::Temp temp_message;
+    temp_message.name = temp_response_msg->name;
+    temp_message.number = temp_map[temp_response_msg->name].size();
+    temp_count_publisher->publish(temp_message);
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
+    // publish object locations to hololens
+    for (auto &object : object_map_[temp_response_msg->name])
+    {
+
+        object_locations_publisher->publish(object.message);
+    }
+
+    RCLCPP_INFO(this->get_logger(), "Current Temp Map:");
+    for (const auto &pair : temp_map)
+    {
+        RCLCPP_INFO(this->get_logger(), "Object Type: %s", pair.first.c_str());
+        for (const auto &obj : pair.second)
+        {
+            RCLCPP_INFO(this->get_logger(), "  ID: %d, Position: [%.2f, %.2f, %.2f]",
+                        obj.id, obj.pose.position.x, obj.pose.position.y, obj.pose.position.z);
+        }
+    }
+}
+
+void CommunicatorNode::humanCorrectionCallback(const customed_interfaces::msg::Object::SharedPtr human_corrected_msg)
+{
+    if (!isObjectInSTOD(human_corrected_msg->name, human_corrected_msg->id))
+        return;
+
+    // class is found
+    auto &object = object_map_.at(human_corrected_msg->name)[human_corrected_msg->id - 1];
+
+    if (!object.topic_name.empty())
+    { // online object that has a topic
+        // find odom_topic
+        auto odometry_topic = odom_topics.find(object.topic_name);
+
+        // calculate transformation matrix
+        // Eigen::Matrix4d T_odom = poseToTransformation(odometry_topic->second.odom_msg.pose.pose);
+        Eigen::Matrix4d T_object = poseToTransformation(object.message.pose);
+        Eigen::Matrix4d T_corrected = poseToTransformation(human_corrected_msg->pose);
+
+        // Compute the correction transformation
+        odometry_topic->second.T_human_correction = T_corrected * T_object.inverse();
+        RCLCPP_INFO(this->get_logger(), "human correction was calculated by multiplying T_corrected * T_object.inverse()");
+    }
+
+    RCLCPP_INFO(this->get_logger(), "Human agent suggested a correction to %s %d to position [%.2f, %.2f, %.2f]",
+                human_corrected_msg->name.c_str(), human_corrected_msg->id, human_corrected_msg->pose.position.x, human_corrected_msg->pose.position.y, human_corrected_msg->pose.position.z);
+
+    // replace the current pose with the corrected pose
+    object.message.pose = human_corrected_msg->pose; // applies for both online and offline objects
+    PrintSTOD();
+    omniverse_publisher->publish(object.message);
+    logger_.logAllObjects(object_map_);
+}
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void CommunicatorNode::InitializePublishers()
@@ -339,6 +319,119 @@ void CommunicatorNode::InitializePublishers()
 STOD_hololens_publisher = this->create_publisher<customed_interfaces::msg::Object>("/hololensSTOD", 10);
     STOD_omniverse_publisher = this->create_publisher<customed_interfaces::msg::Object>("/omniverseSTOD", 10);
     temp_count_publisher = this->create_publisher<customed_interfaces::msg::Temp>("/tempCount", 10);
+
+    object_status_publisher = this->create_publisher<customed_interfaces::msg::HuskyStatus>("/objectStatus", 10);
+    kobuki_status_publisher = this->create_publisher<customed_interfaces::msg::KobukiStatus>("/kobukiStatus", 10);
+}
+
+void CommunicatorNode::InitializeSubscribers()
+{
+    hololens_object_subscriber = this->create_subscription<customed_interfaces::msg::Object>(
+        "/hololensObject", 10,
+
+        std::bind(&CommunicatorNode::objectCallback, this, std::placeholders::_1));
+
+    human_correction_subscriber = this->create_subscription<customed_interfaces::msg::Object>(
+        "/humanCorrection", 10, std::bind(&CommunicatorNode::humanCorrectionCallback, this, std::placeholders::_1));
+
+    temp_response_subscriber = this->create_subscription<customed_interfaces::msg::Temp>(
+        "/tempResponse", 10, std::bind(&CommunicatorNode::tempResponseCallback, this, std::placeholders::_1));
+}
+
+void CommunicatorNode::StatusSubscribers()
+{
+    for (auto &status_topic_name : status_topics)
+    {
+        // TODO: add a condition if the robot isnt found, make a function for it
+        if (status_topic_name.second.class_name == "Husky")
+        {
+            RCLCPP_INFO(this->get_logger(), "status_topic_name is Husky");
+            if (status_topic_name.second.status_type == "battery")
+            {
+                RCLCPP_INFO(this->get_logger(), "status_type is battery");
+
+                this->create_subscription<std_msgs::msg::Float32>(
+                    status_topic_name.first, 10,
+                    [this, &status_topic_name](const std_msgs::msg::Float32::SharedPtr msg)
+                    {
+                        auto &object = object_map_.at(status_topic_name.second.class_name)[status_topic_name.second.id - 1];
+                        object.status.husky_status.name = object.message.name;
+                        object.status.husky_status.id = object.message.id;
+                        object.status.husky_status.battery_percentage = msg->data;
+                        RCLCPP_INFO(this->get_logger(), "husky status is %d", object.status.husky_status.battery_percentage);
+                        object_status_publisher->publish(object.status.husky_status);
+                    });
+            }
+            else if (status_topic_name.second.status_type == "status")
+            {
+                this->create_subscription<customed_interfaces::msg::HuskyStatus>(
+                    status_topic_name.first, 10,
+                    [this, &status_topic_name](const customed_interfaces::msg::HuskyStatus msg)
+                    {
+                        auto &object = object_map_.at(status_topic_name.second.class_name)[status_topic_name.second.id - 1];
+                        object.status.type = "Husky";
+                        object.status.husky_status.name = object.message.name;
+                        object.status.husky_status.id = object.message.id;
+                        object.status.husky_status.left_driver_current = msg.left_driver_current;
+                        object.status.husky_status.right_driver_current = msg.right_driver_current;
+                        object.status.husky_status.battery_voltage = msg.battery_voltage;
+                        object.status.husky_status.left_driver_voltage = msg.left_driver_voltage;
+                        object.status.husky_status.right_driver_voltage = msg.right_driver_voltage;
+                        object.status.husky_status.left_driver_temp = msg.left_driver_temp;
+                        object.status.husky_status.right_driver_temp = msg.right_driver_temp;
+                        object.status.husky_status.timeout = msg.timeout;
+                        object.status.husky_status.lockout = msg.lockout;
+                        object.status.husky_status.e_stop = msg.e_stop;
+                        object.status.husky_status.ros_pause = msg.ros_pause;
+                        object.status.husky_status.no_battery = msg.no_battery;
+                        object.status.husky_status.current_limit = msg.current_limit;
+                        object_status_publisher->publish(object.status.husky_status);
+                    });
+            }
+        }
+        else if (status_topic_name.second.class_name == "Kobuki")
+        {
+        }
+    }
+    // for (auto &status_topic_name : status_topics)
+    // { // fill the odom_msg in odom_topics map
+    //     robot_status_subscribers_.push_back(this->create_subscription<std_msgs::msg::Float32>(
+    //         status_topic_name.first, 10,
+    //         [this, &status_topic_name](const std_msgs::msg::Float32::SharedPtr msg)
+    //         {
+    //             auto &object = object_map_.at(status_topic_name.second.class_name)[status_topic_name.second.id - 1];
+    //             // TODO: create a condition if object is not found
+    //             //  RCLCPP_INFO(this->get_logger(), object.message.name.c_str());
+    //             object.status.name = object.message.name;
+    //             object.status.id = object.message.id;
+    //             if (status_topic_name.second.status_type == "battery")
+    //             {
+    //                 object.status.battery_percentage = msg->data;
+    //             }
+    //             else if (status_topic_name.second.status_type == "velocity")
+    //             {
+    //                 object.status.velocity = msg->data;
+    //             }
+    //             else if (status_topic_name.second.status_type == "temperature")
+    //             {
+    //                 object.status.temperature = msg->data;
+    //             }
+    //             object_status_publisher->publish(object.status);
+    //             // TODO: log objects based on time
+    //         }));
+    // }
+}
+
+bool CommunicatorNode::isObjectInSTOD(const std::string &object_class_name, const int &object_id)
+{
+    auto it = object_map_.find(object_class_name);
+    if (it == object_map_.end() || object_id - 1 >= it->second.size())
+    {
+        // The class name wasn't found in the map
+        RCLCPP_INFO(this->get_logger(), "Class %s with id %d was not found in the object map", object_class_name.c_str(), object_id);
+        return false;
+    }
+    return true;
 }
 
 DataLogger::object_map_struct CommunicatorNode::AddNewObject(const customed_interfaces::msg::Object &message)
