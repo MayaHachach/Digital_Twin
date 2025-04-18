@@ -15,7 +15,7 @@ Before running:
 
 -----------------------------------------------------------------------------------------
 
-How to run:\
+How to run:
 - build the system using colcon build
 
 If you dont have Day 0 information:
