@@ -1,0 +1,23 @@
+communicator_node:
+  ros_parameters:
+    robots:
+      Husky1:
+        type: Husky
+        topics:
+          odometry: /transformed_odom
+          feedback:
+            robot_status: /Husky1/status
+      Husky2:
+        type: Husky
+        topics:
+          odometry: e.g. /Husky2/odom
+          feedback:
+            robot_status: e.g. /Husky2/status
+      Kobuki1:
+        type: Kobuki
+        topics:
+          odometry: /kobuki_1/odom
+          feedback:
+            battery_state: /battery_state
+            wheel_vel: /wheel_vels
+            wheel_status: /wheel_status

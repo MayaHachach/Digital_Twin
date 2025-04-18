@@ -1,0 +1,5 @@
+communicator_node:
+  ros_parameters:
+    robot_classes:
+      - Husky
+      - Kobuki

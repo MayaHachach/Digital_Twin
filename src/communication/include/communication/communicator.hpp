@@ -4,12 +4,29 @@
 #include <rclcpp/rclcpp.hpp>
 #include <nlohmann/json.hpp>
 #include <unordered_map>
+#include <map>
+#include <fstream>
 #include <vector>
+#include <string>
 #include "communication/data_logger.hpp"
 #include <nav_msgs/msg/odometry.hpp>
 #include "customed_interfaces/msg/object.hpp" // Replace with the correct message type header
 #include "customed_interfaces/msg/temp.hpp"
 #include "customed_interfaces/srv/request_stod.hpp"
+
+#include "communication/robot_monitor/robot_interface.hpp"
+#include "communication/robot_monitor/husky_robot.hpp"
+#include "communication/robot_monitor/kobuki_robot.hpp"
+#include "communication/robot_monitor/robot_monitor_factory.hpp"
+#include "customed_interfaces/msg/husky_status.hpp"
+#include "customed_interfaces/msg/kobuki_status.hpp"
+#include "yaml-cpp/yaml.h"
+#include <filesystem> // C++17
+
+#include "std_msgs/msg/int32.hpp"
+#include "std_msgs/msg/float32.hpp"
+#include <geometry_msgs/msg/twist.hpp>
+
 #include <cmath>
 // for transformation
 #include <eigen3/Eigen/Dense>
@@ -18,11 +35,21 @@
 #include <tf2/LinearMath/Matrix3x3.h>
 
 using namespace std;
+
+// Structure to hold robot configuration
+struct RobotConfig
+{
+    std::string type;
+    std::map<std::string, std::string> feedback_topics;
+    std::string odometry_topic;
+};
+
 class CommunicatorNode : public rclcpp::Node
 {
 private:
     //? subscribers
     rclcpp::Subscription<customed_interfaces::msg::Object>::SharedPtr hololens_object_subscriber;
+    rclcpp::Subscription<customed_interfaces::msg::Object>::SharedPtr initial_STOD_subscriber;
     rclcpp::Subscription<customed_interfaces::msg::Object>::SharedPtr human_correction_subscriber;
     rclcpp::Subscription<customed_interfaces::msg::Temp>::SharedPtr temp_response_subscriber;
     vector<rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr> robot_odom_subscribers_;
@@ -31,6 +58,11 @@ private:
     rclcpp::Publisher<customed_interfaces::msg::Object>::SharedPtr omniverse_publisher;
     rclcpp::Publisher<customed_interfaces::msg::Object>::SharedPtr object_locations_publisher;
     rclcpp::Publisher<customed_interfaces::msg::Temp>::SharedPtr temp_count_publisher;
+    rclcpp::Publisher<customed_interfaces::msg::HuskyStatus>::SharedPtr object_status_publisher;
+    rclcpp::Publisher<customed_interfaces::msg::KobukiStatus>::SharedPtr kobuki_status_publisher;
+
+    // Timer for publishing robot status
+    rclcpp::TimerBase::SharedPtr status_publish_timer_;
 
     //? services
     rclcpp::Publisher<customed_interfaces::msg::Object>::SharedPtr STOD_hololens_publisher;
@@ -46,21 +78,27 @@ private:
     //? variables
     rclcpp::TimerBase::SharedPtr timer_;
     customed_interfaces::msg::Object::SharedPtr last_message_;
-    customed_interfaces::msg::Temp::SharedPtr previous_message;
+    customed_interfaces::msg::Temp::SharedPtr previous_temp_message;
     customed_interfaces::msg::Object::SharedPtr message;
+
     DataLogger logger_;
     DataLogger temp_logger;
     double threshold_;
     double euclidean_threshold;
     double angular_threshold;
     float temp_id;
+    bool stodReceived{false},
+        prevStodReceived{false};
+    std::unordered_map<std::string, int> object_counts;
 
-    std::unordered_map<std::string, int> object_counts{
-        {"Husky", 2},
-        {"MonitorEcho", 2},
-        {"Kobuki", 1},
-        {"Chair", 2},
-        {"RedChair", 2}};
+    struct status_struct
+    {
+        string class_name;
+        string robot_type;
+    };
+
+    //'b' for battery, 'v' for velocity, and 't' for temperature
+    std::unordered_map<string, status_struct> status_topics;
 
     struct topics_struct
     {
@@ -69,48 +107,61 @@ private:
         nav_msgs::msg::Odometry odom_msg;
         Eigen::Matrix4d T_human_correction = Eigen::Matrix4d::Identity();
         Eigen::Matrix4d T_global_frame = Eigen::Matrix4d::Identity();
+        bool recalculate_transformation = false;
     };
 
-    std::unordered_map<std::string, topics_struct> odom_topics =
-        {
-            {"/transformed_odom", {"Husky"}},
-            {"/husky2/odom", {"Husky"}},
-            {"kobuki/odom", {"Kobuki"}}};
+    // std::unordered_map<std::string, topics_struct> odom_topics =
+    //     {
+    //         {"/transformed_odom", {"Husky", 1}},
+    //         {"/slam_odom", {"Kobuki", 1}}};
+
+    std::unordered_map<std::string, topics_struct> odom_topics;
 
     std::unordered_map<std::string, vector<DataLogger::object_map_struct>> object_map_;
 
     unordered_map<string, vector<customed_interfaces::msg::Object>> temp_map;
-    std::vector<std::string> offline_objects = {"Chair", "MonitorEcho", "RedChair"};
+
+    // Robot monitors
+    std::map<std::string, std::shared_ptr<communication::RobotMonitor>> robot_monitors_;
 
     //? Methods
-    void objectCallback(const customed_interfaces::msg::Object::SharedPtr msg);
-    void humanCorrectionCallback(const customed_interfaces::msg::Object::SharedPtr msg);
-    void tempResponseCallback(const customed_interfaces::msg::Temp::SharedPtr msg);
-    
-    // void logAllObjects();
-    // std::string GetTimestamp();
+    // general usage methods
     void InitializePublishers();
     void InitializeSubscribers();
-    void StatusSubscribers();
+    void InitializeServices();
     void PrintSTOD();
+    void printMatrix(const Eigen::Matrix4d &matrix, const std::string &label);
+    void fillObjectCounts();
+    void fillOdomTopics();
     bool isMessageEqual(const customed_interfaces::msg::Object &msg1, const customed_interfaces::msg::Object &msg2);
     bool isMessageEqual(const customed_interfaces::msg::Temp &msg1, const customed_interfaces::msg::Temp &msg2);
     bool isPoseEqual(const geometry_msgs::msg::Pose &msg1, const geometry_msgs::msg::Pose &msg2);
-    bool isObjectInSTOD(const std::string &object_class_name, const int &object_id);
+    bool isObjectInSTOD(const std::string &object_class_name, int object_id = 0);
+    void processRobotsNode(const YAML::Node &robots, std::map<std::string, RobotConfig> &configs);
+    void publishRobotStatus();
     DataLogger::object_map_struct AddNewObject(const customed_interfaces::msg::Object &message);
+    DataLogger::object_map_struct AddObjectWithCount(const customed_interfaces::msg::Object &message);
+    Eigen::Matrix4d poseToTransformation(const geometry_msgs::msg::Pose &pose);
+    nav_msgs::msg::Odometry TransformationToPose(const Eigen::Matrix4d transformation_matrix);
+    std::map<std::string, RobotConfig> loadRobotConfigs(const std::string &filename);
+
+    // callbacks
+    void objectCallback(const customed_interfaces::msg::Object::SharedPtr msg);
+    void objectUpdate(const customed_interfaces::msg::Object::SharedPtr msg);
+    void humanCorrectionCallback(const customed_interfaces::msg::Object::SharedPtr human_corrected_msg);
+    void tempResponseCallback(const customed_interfaces::msg::Temp::SharedPtr temp_response_msg);
+    void STODExtractionCallback(const customed_interfaces::msg::Object::SharedPtr object_msg);
+    void robotOdomCallback(const std::string &topic_name, const nav_msgs::msg::Odometry::SharedPtr msg);
+
     // services methods
     void publishHololensSTOD();
     void publishOmniverseSTOD();
 
-    Eigen::Matrix4d poseToTransformation(const geometry_msgs::msg::Pose &pose);
-    nav_msgs::msg::Odometry TransformationToPose(const Eigen::Matrix4d transformation_matrix);
-
-    void printMatrix(const Eigen::Matrix4d &matrix, const std::string &label);
-
-
-
 public:
+    void InitializeRobotMonitor();
+
     CommunicatorNode(/* args */);
+    ~CommunicatorNode();
 };
 
 #endif //__COMMUNICATOR__HPP__

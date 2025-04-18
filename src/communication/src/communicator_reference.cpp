@@ -1,5 +1,4 @@
 #include "communication/communicator.hpp"
-#include <filesystem>
 
 CommunicatorNode::CommunicatorNode() : Node("communicator_node"), logger_("initial_history"), temp_logger("temp_history")
 {
@@ -7,16 +6,331 @@ CommunicatorNode::CommunicatorNode() : Node("communicator_node"), logger_("initi
     object_map_ = logger_.loadLastIterationToMap();
     temp_map = temp_logger.loadLastTempToMap();
 
-    fillObjectCounts();
-    fillOdomTopics();
     PrintSTOD();
+    fillObjectCounts();
 
-    InitializePublishers();
-    InitializeSubscribers();
-    InitializeServices();
+    // initial_STOD_subscriber = this->create_subscription<customed_interfaces::msg::Object>(
+    //     "/initialSTOD", 10,
+    //     std::bind(&CommunicatorNode::STODExtractionCallback, this, std::placeholders::_1));
+    // InitializeServices();
+
+    // Create a timer to publish robot status data
+    status_publish_timer_ = this->create_wall_timer(
+        std::chrono::seconds(1), // 1 second interval
+        std::bind(&CommunicatorNode::publishRobotStatus, this));
+
+    RCLCPP_INFO(this->get_logger(), "Communicator node initialized with robot monitors");
+}
+
+// Monitoring
+
+// Helper function to process the robots node
+void CommunicatorNode::processRobotsNode(const YAML::Node &robots, std::map<std::string, RobotConfig> &configs)
+{
+    for (const auto &robot : robots)
+    {
+        RobotConfig robot_config;
+        std::string robot_id = robot.first.as<std::string>();
+
+        const auto &robot_data = robot.second;
+        robot_config.type = robot_data["type"].as<std::string>();
+        RCLCPP_INFO(this->get_logger(), "Robot Type: %s", robot_config.type.c_str());
+        // Handle odometry topic
+        if (robot_data["topics"] && robot_data["topics"]["odometry"])
+        {
+            robot_config.odometry_topic = robot_data["topics"]["odometry"].as<std::string>();
+        }
+
+        // Handle feedback topics
+        if (robot_data["topics"] && robot_data["topics"]["feedback"])
+        {
+            const auto &feedback = robot_data["topics"]["feedback"];
+            for (const auto &topic : feedback)
+            {
+                auto topic_type = topic.first.as<std::string>();
+                auto topic_name = topic.second.as<std::string>();
+                robot_config.feedback_topics[topic_type] = topic_name;
+                RCLCPP_INFO(this->get_logger(), "Feedback Topic: %s -> %s",
+                            topic_type.c_str(), topic_name.c_str());
+            }
+        }
+
+        configs[robot_id] = robot_config;
+        RCLCPP_INFO(this->get_logger(),
+                    "Loaded configuration for robot %s: type=%s, odom=%s, feedback_topics=%zu",
+                    robot_id.c_str(),
+                    robot_config.type.c_str(),
+                    robot_config.odometry_topic.c_str(),
+                    robot_config.feedback_topics.size());
+
+        RCLCPP_INFO(this->get_logger(), "--------------------------------------");
+    }
+}
+
+std::map<std::string, RobotConfig> CommunicatorNode::loadRobotConfigs(const std::string &filename)
+{
+    std::map<std::string, RobotConfig> configs;
+
+    try
+    {
+        YAML::Node config = YAML::LoadFile(filename);
+        RCLCPP_INFO(this->get_logger(), "Loading robots from communicator_node");
+        RCLCPP_INFO(this->get_logger(), "--------------------------------------");
+        const auto &robots = config["communicator_node"]["ros_parameters"]["robots"];
+
+        processRobotsNode(robots, configs);
+    }
+    catch (const YAML::Exception &e)
+    {
+        throw std::runtime_error("Error parsing YAML file: " + std::string(e.what()));
+    }
+    catch (const std::exception &e)
+    {
+        throw std::runtime_error("Error loading robot configurations: " + std::string(e.what()));
+    }
+
+    return configs;
+}
+
+void CommunicatorNode::InitializeRobotMonitor()
+{
+    // Load robot configurations from YAML file
+    std::string config_path = this->declare_parameter("config_path", "config/robots.yaml");
+    std::map<std::string, RobotConfig> robot_configs = loadRobotConfigs(config_path);
+
+    // Initialize robot monitors with the loaded configurations
+    try
+    {
+        // Create monitors for each robot
+        for (const auto &[robot_id, config] : robot_configs)
+        {
+            RCLCPP_INFO(this->get_logger(), "Creating monitor for robot %s of type %s",
+                        robot_id.c_str(), config.type.c_str());
+            auto monitor = communication::createRobotMonitor(robot_id, config.type, config.feedback_topics, this->shared_from_this());
+            if (monitor)
+            {
+                robot_monitors_[robot_id] = monitor; // store monitor instance 
+                RCLCPP_INFO(this->get_logger(), "Created monitor for robot %s of type %s",
+                            robot_id.c_str(), config.type.c_str());
+            }
+            else
+            {
+                RCLCPP_ERROR(this->get_logger(), "Failed to create monitor for robot %s",
+                             robot_id.c_str());
+            }
+            RCLCPP_INFO(this->get_logger(), "--------------------------------------");
+        }
+    }
+    catch (const std::exception &e)
+    {
+        RCLCPP_ERROR(this->get_logger(), "Error initializing robot monitors: %s", e.what());
+    }
+
+    //! Process robot configurations for topics
+    // for (const auto &[topic_name, robot_config] : robot_configs)
+    // {
+    //     // Add odometry topic
+    //     if (!robot_config.odometry_topic.empty())
+    //     {
+    //         odom_topics[robot_config.odometry_topic] = topics_struct();
+    //         odom_topics[robot_config.odometry_topic].class_name = robot_config.type;
+    //         odom_topics[robot_config.odometry_topic].id = 1;
+    //         RCLCPP_INFO(this->get_logger(), "Added odometry topic: %s",
+    //                     robot_config.odometry_topic.c_str());
+    //     }
+    // }
+}
+
+void CommunicatorNode::publishRobotStatus()
+{
+    RCLCPP_INFO(this->get_logger(), "publishRobotStatus");
+
+    // Publish status for each robot
+    for (const auto &[robot_id, monitor] : robot_monitors_)
+    {
+        const auto &status = monitor->getStatus();
+        if (status.robot_type == "husky")
+        {
+            customed_interfaces::msg::HuskyStatus msg;
+            msg.name = status.robot_id;
+            msg.battery_percentage = status.data["battery_level"];
+
+            // Add additional data if available
+            auto temp_it = status.data.find("left_motor_temp");
+            if (temp_it != status.data.end())
+            {
+                msg.left_motor_temp = temp_it->second;
+            }
+
+            auto current_it = status.data.find("left_driver_current");
+            if (current_it != status.data.end())
+            {
+                msg.left_driver_current = current_it->second;
+            }
+
+            // object_status_publisher_->publish(msg);
+            object_status_publisher->publish(msg);
+            RCLCPP_INFO(this->get_logger(), "Published Husky status for robot %s", robot_id.c_str());
+        }
+        else if (status.robot_type == "kobuki")
+        {
+            auto msg = std::make_unique<customed_interfaces::msg::KobukiStatus>();
+            msg->name = status.robot_id;
+            // msg->battery_percentage = status.data.find("battery_percentage");
+
+            // Add additional data if available
+            auto left_current_it = status.data.find("left_driver_current");
+            if (left_current_it != status.data.end())
+            {
+                msg->left_driver_current = left_current_it->second;
+            }
+
+            auto right_current_it = status.data.find("right_driver_current");
+            if (right_current_it != status.data.end())
+            {
+                msg->right_driver_current = right_current_it->second;
+            }
+
+            kobuki_status_publisher->publish(std::move(msg));
+            RCLCPP_INFO(this->get_logger(), "Published Kobuki status for robot %s", robot_id.c_str());
+        }
+    }
 }
 
 // Subscription Callbacks
+
+void CommunicatorNode::objectCallback(const customed_interfaces::msg::Object::SharedPtr msg)
+{
+    // Check if the message is the same as the last one
+    if (last_message_ != nullptr && isMessageEqual(*msg, *last_message_))
+    {
+        RCLCPP_INFO(this->get_logger(), "duplicate message");
+        return;
+    }
+
+    message = last_message_ = msg; // Store the received message
+    RCLCPP_INFO(this->get_logger(), "new message is received");
+
+    // check if object class if found in our object_map
+    auto it = object_map_.find(message->name);
+
+    // if the object class is not in the map, create one
+    if (it == object_map_.end())
+    {
+        RCLCPP_INFO(this->get_logger(), "creating new class..");
+        DataLogger::object_map_struct new_object = AddObjectWithCount(*message);
+        logger_.logAllObjects(object_map_);
+        return;
+    }
+
+    // check if the object is already in the map and in the same position
+    for (auto &object : object_map_[message->name]) // go through the vector of structs
+    {
+        RCLCPP_INFO(this->get_logger(), "checking objects in class");
+
+        if (!isPoseEqual(object.message.pose, message->pose))
+        {
+            continue;
+        }
+
+        // Check if topic_name is empty, if yes, fill it if available
+        if (object.topic_name == "")
+        {
+            for (auto &pair : odom_topics)
+            {
+                // if the topic is already taken, skip
+                if (pair.second.class_name != "")
+                {
+                    continue;
+                }
+                // if the pose is not approx equal, skip
+                if (!isPoseEqual(pair.second.odom_msg.pose.pose, object.message.pose))
+                {
+                    continue;
+                }
+                pair.second.class_name = object.message.name;
+                pair.second.id = object.message.id;
+
+                object.topic_name = pair.first;
+
+                RCLCPP_INFO(this->get_logger(), "edited the object topic_name to: %s", object.topic_name.c_str());
+            }
+        }
+        RCLCPP_INFO(this->get_logger(), "%s is already available on same position. Skipping update.", msg->name.c_str());
+        return;
+    }
+
+    ////////////////////////////
+    if (object_counts[message->name] == 1)
+    {
+        RCLCPP_INFO(this->get_logger(), "There is only one %s, updating its pose...", message->name.c_str());
+        object_map_.at(message->name)[0].message.pose = message->pose;
+        omniverse_publisher->publish(object_map_[message->name][0].message);
+        logger_.logAllObjects(object_map_);
+        return;
+    }
+
+    // TODO: what to do if object_count > 1?
+    // if the new id is greater than the object_count, save in temp
+
+    // if (object_map_[message->name].size() + 1 > object_counts[message->name] && find(offline_objects.begin(), offline_objects.end(), message->name) != offline_objects.end())
+    if (object_map_[message->name].size() + 1 > object_counts[message->name] && object_map_.at(message->name)[message->id - 1].topic_name.empty())
+    {
+        RCLCPP_INFO(this->get_logger(), "an extra %s was detected, checking with hololens", message->name.c_str());
+
+        // add temp object to temp_map
+        customed_interfaces::msg::Object new_temp_object = *message;
+        for (auto &temp : temp_map[message->name])
+        {
+            if (isPoseEqual(temp.pose, message->pose))
+            {
+                RCLCPP_INFO(this->get_logger(), "temp object already exists in temp_map");
+                return;
+            }
+        }
+
+        new_temp_object.id = object_map_[message->name].size() + temp_map[message->name].size() + 1;
+        temp_map[message->name].push_back(new_temp_object);
+        RCLCPP_INFO(this->get_logger(), "new temp object of name = %s and id = %d is added to the temp_map", new_temp_object.name.c_str(), new_temp_object.id);
+        RCLCPP_INFO(this->get_logger(), "Current Temp Map:");
+        for (const auto &pair : temp_map)
+        {
+            RCLCPP_INFO(this->get_logger(), "Object Type: %s", pair.first.c_str());
+            for (const auto &obj : pair.second)
+            {
+                RCLCPP_INFO(this->get_logger(), "  ID: %d, Position: [%.2f, %.2f, %.2f]",
+                            obj.id, obj.pose.position.x, obj.pose.position.y, obj.pose.position.z);
+            }
+        }
+
+        // publish temp object counts
+        customed_interfaces::msg::Temp temp_message;
+        temp_message.name = message->name;
+        temp_message.number = temp_map[message->name].size();
+        temp_count_publisher->publish(temp_message);
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
+        // publish object locations to hololens
+        for (auto &object : object_map_[message->name])
+        {
+            object_locations_publisher->publish(object.message);
+        }
+
+        // publish to omniverse
+        // omniverse_publisher->publish(new_temp_object);
+        temp_logger.logTempObjects(temp_map);
+
+        return;
+    }
+
+    ////////////////////////////
+
+    // if object is not found, create
+    DataLogger::object_map_struct new_object = AddObjectWithCount(*message);
+    logger_.logAllObjects(object_map_);
+}
+
 void CommunicatorNode::objectUpdate(const customed_interfaces::msg::Object::SharedPtr msg)
 {
     // Check if the message is the same as the last one
@@ -53,7 +367,7 @@ void CommunicatorNode::objectUpdate(const customed_interfaces::msg::Object::Shar
         topicInfo.recalculate_transformation = true;
 
         omniverse_publisher->publish(object_map_[message->name][0].message);
-        logger_.logAllObjects(object_map_, robot_monitors_);
+        logger_.logAllObjects(object_map_);
         PrintSTOD();
         return;
     }
@@ -76,7 +390,7 @@ void CommunicatorNode::objectUpdate(const customed_interfaces::msg::Object::Shar
 
         // publish and log
         omniverse_publisher->publish(online_object.message);
-        logger_.logAllObjects(object_map_, robot_monitors_);
+        logger_.logAllObjects(object_map_);
         PrintSTOD();
         return;
     }
@@ -188,7 +502,7 @@ void CommunicatorNode::robotOdomCallback(const std::string &topic_name, const na
 
     omniverse_publisher->publish(object.message);
     PrintSTOD();
-    logger_.logAllObjects(object_map_, robot_monitors_);
+    logger_.logAllObjects(object_map_);
 }
 
 void CommunicatorNode::tempResponseCallback(const customed_interfaces::msg::Temp::SharedPtr temp_response_msg)
@@ -232,7 +546,7 @@ void CommunicatorNode::tempResponseCallback(const customed_interfaces::msg::Temp
             temp_it->second.pop_back();
             RCLCPP_INFO(this->get_logger(), "Last object removed from temp_map[%s]", temp_response_msg->name.c_str());
 
-            logger_.logAllObjects(object_map_, robot_monitors_);
+            logger_.logAllObjects(object_map_);
             temp_logger.logTempObjects(temp_map);
 
             break;
@@ -296,7 +610,47 @@ void CommunicatorNode::humanCorrectionCallback(const customed_interfaces::msg::O
     object.message.pose = human_corrected_msg->pose; // applies for both online and offline objects
     PrintSTOD();
     omniverse_publisher->publish(object.message);
-    logger_.logAllObjects(object_map_, robot_monitors_);
+    logger_.logAllObjects(object_map_);
+}
+
+void CommunicatorNode::STODExtractionCallback(const customed_interfaces::msg::Object::SharedPtr object_msg)
+{
+    if (!object_counts.empty()) // already object_map exists, no need to overwrite it, turn off subscriber.
+    {
+        initial_STOD_subscriber.reset();
+        return;
+    }
+
+    if (object_msg->name == "end")
+    {
+        // object count
+        for (auto &pair : object_map_)
+        {
+            object_counts[pair.first] = pair.second.size();
+
+            // sort the vector
+            std::sort(pair.second.begin(), pair.second.end(), [this](const DataLogger::object_map_struct &a, const DataLogger::object_map_struct &b)
+                      { return a.message.id < b.message.id; });
+
+            PrintSTOD();
+        }
+
+        // print object_counts
+        for (const auto &object_count : object_counts)
+        {
+            RCLCPP_INFO(this->get_logger(), "Object count of class %s is %d", object_count.first.c_str(), object_count.second);
+        }
+
+        // logging
+        logger_.logAllObjects(object_map_);
+        stodReceived = true;
+        return;
+    }
+
+    if (isObjectInSTOD(object_msg->name, object_msg->id))
+        return;
+
+    AddNewObject(*object_msg);
 }
 
 // Service Handlers
@@ -346,10 +700,18 @@ void CommunicatorNode::InitializePublishers()
     STOD_hololens_publisher = this->create_publisher<customed_interfaces::msg::Object>("/hololensSTOD", 10);
     STOD_omniverse_publisher = this->create_publisher<customed_interfaces::msg::Object>("/omniverseSTOD", 10);
     temp_count_publisher = this->create_publisher<customed_interfaces::msg::Temp>("/tempCount", 10);
+
+    object_status_publisher = this->create_publisher<customed_interfaces::msg::HuskyStatus>("/objectStatus", 10);
+    kobuki_status_publisher = this->create_publisher<customed_interfaces::msg::KobukiStatus>("/kobukiStatus", 10);
 }
 
 void CommunicatorNode::InitializeSubscribers()
 {
+    // !!!!!!
+    // hololens_object_subscriber = this->create_subscription<customed_interfaces::msg::Object>(
+    //     "/hololensObject", 10,
+    //     std::bind(&CommunicatorNode::objectCallback, this, std::placeholders::_1));
+
     hololens_object_subscriber = this->create_subscription<customed_interfaces::msg::Object>(
         "/hololensObject", 10,
         std::bind(&CommunicatorNode::objectUpdate, this, std::placeholders::_1));
@@ -359,6 +721,10 @@ void CommunicatorNode::InitializeSubscribers()
 
     temp_response_subscriber = this->create_subscription<customed_interfaces::msg::Temp>(
         "/tempResponse", 10, std::bind(&CommunicatorNode::tempResponseCallback, this, std::placeholders::_1));
+
+    initial_STOD_subscriber = this->create_subscription<customed_interfaces::msg::Object>(
+        "/initialSTOD", 10,
+        std::bind(&CommunicatorNode::STODExtractionCallback, this, std::placeholders::_1));
 
     for (auto &pair : odom_topics)
     {
@@ -380,120 +746,6 @@ void CommunicatorNode::InitializeServices()
         std::bind(&CommunicatorNode::handleRequest, this, std::placeholders::_1, std::placeholders::_2));
 }
 
-void CommunicatorNode::InitializeRobotMonitor()
-{
-    // Load robot configurations from YAML file
-    // std::string config_path = this->declare_parameter("config_path", "config/robots.yaml");
-    auto source_path = std::filesystem::path(std::string(__FILE__));
-    auto workspace_src = source_path.parent_path().parent_path().parent_path().parent_path().parent_path();
-    auto config_dir = workspace_src / "Digital_Twin" / "src" / "communication" / "config";
-    auto config_path = config_dir / "robots.yaml";
-    
-    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    if (!std::filesystem::exists(config_path) || std::filesystem::is_empty(config_path))
-    {
-        RCLCPP_ERROR(this->get_logger(), "Config file is empty: %s", config_path.string().c_str());
-        return;
-    }
-
-    std::map<std::string, RobotConfig> robot_configs = loadRobotConfigs(config_path);
-
-    // Initialize robot monitors with the loaded configurations
-    try
-    {
-        // Create monitors for each robot
-        for (const auto &[robot_id, config] : robot_configs)
-        {
-            RCLCPP_INFO(this->get_logger(), "Creating monitor for robot %s of type %s",
-                        robot_id.c_str(), config.type.c_str());
-            auto monitor = communication::createRobotMonitor(robot_id, config.type, config.feedback_topics, this->shared_from_this());
-            if (monitor)
-            {
-                robot_monitors_[robot_id] = monitor;
-                // RCLCPP_INFO(this->get_logger(), "Created monitor for robot %s of type %s",
-                // robot_id.c_str(), config.type.c_str());
-            }
-            else
-            {
-                RCLCPP_ERROR(this->get_logger(), "Failed to create monitor for robot %s",
-                             robot_id.c_str());
-            }
-            // RCLCPP_INFO(this->get_logger(), "--------------------------------------");
-        }
-    }
-    catch (const std::exception &e)
-    {
-        RCLCPP_ERROR(this->get_logger(), "Error initializing robot monitors: %s", e.what());
-    }
-}
-
-std::map<std::string, RobotConfig> CommunicatorNode::loadRobotConfigs(const std::string &filename)
-{
-    std::map<std::string, RobotConfig> configs;
-
-    try
-    {
-        YAML::Node config = YAML::LoadFile(filename);
-        // RCLCPP_INFO(this->get_logger(), "Loading robots from communicator_node");
-        // RCLCPP_INFO(this->get_logger(), "--------------------------------------");
-        const auto &robots = config["communicator_node"]["ros_parameters"]["robots"];
-
-        processRobotsNode(robots, configs);
-    }
-    catch (const YAML::Exception &e)
-    {
-        throw std::runtime_error("Error parsing YAML file: " + std::string(e.what()));
-    }
-    catch (const std::exception &e)
-    {
-        throw std::runtime_error("Error loading robot configurations: " + std::string(e.what()));
-    }
-
-    return configs;
-}
-
-void CommunicatorNode::processRobotsNode(const YAML::Node &robots, std::map<std::string, RobotConfig> &configs)
-{
-    for (const auto &robot : robots)
-    {
-        RobotConfig robot_config;
-        std::string robot_id = robot.first.as<std::string>();
-
-        const auto &robot_data = robot.second;
-        robot_config.type = robot_data["type"].as<std::string>();
-        RCLCPP_INFO(this->get_logger(), "Robot Type: %s", robot_config.type.c_str());
-        // Handle odometry topic
-        if (robot_data["topics"] && robot_data["topics"]["odometry"])
-        {
-            robot_config.odometry_topic = robot_data["topics"]["odometry"].as<std::string>();
-        }
-
-        // Handle feedback topics
-        if (robot_data["topics"] && robot_data["topics"]["feedback"])
-        {
-            const auto &feedback = robot_data["topics"]["feedback"];
-            for (const auto &topic : feedback)
-            {
-                auto topic_type = topic.first.as<std::string>();
-                auto topic_name = topic.second.as<std::string>();
-                robot_config.feedback_topics[topic_type] = topic_name;
-                RCLCPP_INFO(this->get_logger(), "Feedback Topic: %s -> %s",
-                            topic_type.c_str(), topic_name.c_str());
-            }
-        }
-
-        configs[robot_id] = robot_config;
-        RCLCPP_INFO(this->get_logger(),
-                    "Loaded configuration for robot %s: type=%s, odom=%s, feedback_topics=%zu",
-                    robot_id.c_str(),
-                    robot_config.type.c_str(),
-                    robot_config.odometry_topic.c_str(),
-                    robot_config.feedback_topics.size());
-
-        RCLCPP_INFO(this->get_logger(), "--------------------------------------");
-    }
-}
-
 void CommunicatorNode::fillObjectCounts()
 {
     if (object_map_.empty())
@@ -506,83 +758,89 @@ void CommunicatorNode::fillObjectCounts()
     }
 }
 
-void CommunicatorNode::fillOdomTopics()
-{
-    // TODO: what happens if the STOD is empty
-    if (object_map_.empty())
-    {
-        // RCLCPP_WARN(this->get_logger(), "Object map is empty, cannot fill odom topics.");
-        return;
-    }
-
-    // Check if odom_topics is already initialized
-    if (!odom_topics.empty())
-    {
-        RCLCPP_INFO(this->get_logger(), "odom_topics is already initialized, assigning topic names to object_map.");
-    }
-
-    else
-    {
-
-        try
-        {
-            // Locate config file path
-            auto source_path = std::filesystem::path(std::string(__FILE__));
-            auto workspace_src = source_path.parent_path().parent_path().parent_path().parent_path().parent_path();
-            auto config_dir = workspace_src / "Digital_Twin" / "src" / "communication" / "config";
-            auto yaml_path = config_dir / "robots.yaml";
-
-            // Load the YAML
-            YAML::Node root = YAML::LoadFile(yaml_path.string());
-            YAML::Node robots_node = root["communicator_node"]["ros_parameters"]["robots"];
-
-            for (const auto &robot_entry : robots_node)
-            {
-                std::string robot_name = robot_entry.first.as<std::string>();
-                std::string robot_type = robot_entry.second["type"].as<std::string>();
-
-                if (robot_entry.second["topics"] && robot_entry.second["topics"]["odometry"])
-                {
-                    std::string odom_topic = robot_entry.second["topics"]["odometry"].as<std::string>();
-
-                    // Skip default placeholders like "e.g."
-                    if (!odom_topic.empty() && odom_topic.find("e.g.") == std::string::npos)
-                    {
-                        std::string number_part = std::string(robot_name.begin() + robot_type.length(), robot_name.end());
-                        int id = std::stoi(number_part);
-
-                        odom_topics[odom_topic] = topics_struct{robot_type, id};
-                        RCLCPP_INFO(this->get_logger(), "Loaded odometry topic from config: %s -> (%s, %d)",
-                                    odom_topic.c_str(), robot_type.c_str(), id);
-                    }
-                }
-            }
-
-            if (odom_topics.empty())
-            {
-                RCLCPP_WARN(this->get_logger(), "No valid odometry topics found in robots.yaml");
-            }
-        }
-        catch (const std::exception &e)
-        {
-            RCLCPP_ERROR(this->get_logger(), "Failed to initialize odom_topics from robots.yaml: %s", e.what());
-        }
-    }
-
-    // After loading odom_topics, assign topic names to object_map_
-    for (auto &odom : odom_topics)
-    {
-        if (!isObjectInSTOD(odom.second.class_name, odom.second.id))
-        {
-            RCLCPP_WARN(this->get_logger(), "Object %s with ID %d not found in object_map_ for topic %s",
-                        odom.second.class_name.c_str(), odom.second.id, odom.first.c_str());
-            continue;
-        }
-        auto &robot = object_map_.at(odom.second.class_name)[odom.second.id - 1];
-        robot.topic_name = odom.first;
-        RCLCPP_INFO(this->get_logger(), "Assigned topic name %s to object of class %s with id %d", odom.first.c_str(), odom.second.class_name.c_str(), odom.second.id);
-    }
-}
+// void CommunicatorNode::StatusSubscribers()
+// {
+//     for (auto &status_topic_name : status_topics)
+//     {
+//         // TODO: add a condition if the robot isnt found, make a function for it
+//         if (status_topic_name.second.class_name == "Husky")
+//         {
+//             RCLCPP_INFO(this->get_logger(), "status_topic_name is Husky");
+//             if (status_topic_name.second.status_type == "battery")
+//             {
+//                 RCLCPP_INFO(this->get_logger(), "status_type is battery");
+//
+//                 this->create_subscription<std_msgs::msg::Float32>(
+//                     status_topic_name.first, 10,
+//                     [this, &status_topic_name](const std_msgs::msg::Float32::SharedPtr msg)
+//                     {
+//                         auto &object = object_map_.at(status_topic_name.second.class_name)[status_topic_name.second.id - 1];
+//                         object.status.husky_status.name = object.message.name;
+//                         object.status.husky_status.id = object.message.id;
+//                         object.status.husky_status.battery_percentage = msg->data;
+//                         RCLCPP_INFO(this->get_logger(), "husky status is %d", object.status.husky_status.battery_percentage);
+//                         object_status_publisher->publish(object.status.husky_status);
+//                     });
+//             }
+//             else if (status_topic_name.second.status_type == "status")
+//             {
+//                 this->create_subscription<customed_interfaces::msg::HuskyStatus>(
+//                     status_topic_name.first, 10,
+//                     [this, &status_topic_name](const customed_interfaces::msg::HuskyStatus msg)
+//                     {
+//                         auto &object = object_map_.at(status_topic_name.second.class_name)[status_topic_name.second.id - 1];
+//                         object.status.type = "Husky";
+//                         object.status.husky_status.name = object.message.name;
+//                         object.status.husky_status.id = object.message.id;
+//                         object.status.husky_status.left_driver_current = msg.left_driver_current;
+//                         object.status.husky_status.right_driver_current = msg.right_driver_current;
+//                         object.status.husky_status.battery_voltage = msg.battery_voltage;
+//                         object.status.husky_status.left_driver_voltage = msg.left_driver_voltage;
+//                         object.status.husky_status.right_driver_voltage = msg.right_driver_voltage;
+//                         object.status.husky_status.left_driver_temp = msg.left_driver_temp;
+//                         object.status.husky_status.right_driver_temp = msg.right_driver_temp;
+//                         object.status.husky_status.timeout = msg.timeout;
+//                         object.status.husky_status.lockout = msg.lockout;
+//                         object.status.husky_status.e_stop = msg.e_stop;
+//                         object.status.husky_status.ros_pause = msg.ros_pause;
+//                         object.status.husky_status.no_battery = msg.no_battery;
+//                         object.status.husky_status.current_limit = msg.current_limit;
+//                         object_status_publisher->publish(object.status.husky_status);
+//                     });
+//             }
+//         }
+//         else if (status_topic_name.second.class_name == "Kobuki")
+//         {
+//         }
+//     }
+// for (auto &status_topic_name : status_topics)
+// { // fill the odom_msg in odom_topics map
+//     robot_status_subscribers_.push_back(this->create_subscription<std_msgs::msg::Float32>(
+//         status_topic_name.first, 10,
+//         [this, &status_topic_name](const std_msgs::msg::Float32::SharedPtr msg)
+//         {
+//             auto &object = object_map_.at(status_topic_name.second.class_name)[status_topic_name.second.id - 1];
+//             // TODO: create a condition if object is not found
+//             //  RCLCPP_INFO(this->get_logger(), object.message.name.c_str());
+//             object.status.name = object.message.name;
+//             object.status.id = object.message.id;
+//             if (status_topic_name.second.status_type == "battery")
+//             {
+//                 object.status.battery_percentage = msg->data;
+//             }
+//             else if (status_topic_name.second.status_type == "velocity")
+//             {
+//                 object.status.velocity = msg->data;
+//             }
+//             else if (status_topic_name.second.status_type == "temperature")
+//             {
+//                 object.status.temperature = msg->data;
+//             }
+//             object_status_publisher->publish(object.status);
+//             // TODO: log objects based on time
+//         }));
+// }
+// }
 
 bool CommunicatorNode::isObjectInSTOD(const std::string &object_class_name, int object_id)
 {
@@ -627,7 +885,8 @@ DataLogger::object_map_struct CommunicatorNode::AddNewObject(const customed_inte
     RCLCPP_INFO(this->get_logger(), "Added new object: %s with id %d", message.name.c_str(), new_object.message.id);
     // Print the entire object_map_
     PrintSTOD();
-    // omniverse_publisher->publish(new_object.message);
+    omniverse_publisher->publish(new_object.message);
+    RCLCPP_INFO(this->get_logger(), "DEBUGGING");
     return new_object;
 }
 
@@ -834,12 +1093,12 @@ CommunicatorNode::~CommunicatorNode()
 {
     // Destructor implementation
     RCLCPP_INFO(this->get_logger(), "CommunicatorNode destroyed");
+    robot_monitors_.clear();
     object_map_.clear();
     temp_map.clear();
     odom_topics.clear();
+    status_topics.clear();
     object_counts.clear();
-    // status_topics.clear();
-    robot_monitors_.clear();
 }
 
 int main(int argc, char *argv[])

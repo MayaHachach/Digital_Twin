@@ -1,4 +1,5 @@
 #include "communication/request_history_server.hpp"
+#include <filesystem>
 
 HistoryFileServer::HistoryFileServer() : Node("History_file_Server")
 {
@@ -14,9 +15,10 @@ void HistoryFileServer::handleRequest(
     const std::shared_ptr<customed_interfaces::srv::RequestHistory::Request> request,
     std::shared_ptr<customed_interfaces::srv::RequestHistory::Response> response)
 {
-
-    auto package_path = ament_index_cpp::get_package_share_directory("communication");
-    std::string file_path = package_path + "/initial_history.json";
+    auto source_path = std::filesystem::path(__FILE__);
+    auto workspace_src = source_path.parent_path().parent_path().parent_path(); // Gets you to .../src/communication
+    auto history_dir = workspace_src / "communication" / "history";             // .../src/communication/history
+    std::string file_path = (history_dir / ("initial_history.json")).string();
 
     std::ifstream file(file_path, std::ios::binary);
     if (!file)

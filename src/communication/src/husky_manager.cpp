@@ -9,6 +9,7 @@
 // #include "customed_interfaces/msg/husky_status.hpp"
 #include "husky_msgs/msg/husky_status.hpp"
 #include "std_msgs/msg/int32.hpp"
+#include "std_msgs/msg/float32.hpp"
 
 class HuskyOdometryTransformer : public rclcpp::Node
 {
@@ -30,7 +31,9 @@ public:
         status_sub = this->create_subscription<husky_msgs::msg::HuskyStatus>(
             "/status", qos_profile , std::bind(&HuskyOdometryTransformer::status_callback, this, std::placeholders::_1));
         
-        husky_battery_pub = this->create_publisher<std_msgs::msg::Int32>("/husky/battery_percentage", 10);
+        husky_battery_pub = this->create_publisher<std_msgs::msg::Float32>("/husky/battery_percentage", 10);
+        husky_velocity_pub = this->create_publisher<std_msgs::msg::Float32>("/husky/velocity", 10);
+        husky_temperature_pub = this->create_publisher<std_msgs::msg::Float32>("/husky/temperature", 10);
 
         // Publisher for transformed odometry
         odom_pub_ = this->create_publisher<nav_msgs::msg::Odometry>("/transformed_odom", 10);
@@ -43,7 +46,9 @@ private:
     rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr pose_sub_;
     rclcpp::Subscription<husky_msgs::msg::HuskyStatus>::SharedPtr status_sub;
     rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub_;
-    rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr husky_battery_pub;
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr husky_battery_pub;
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr husky_velocity_pub;
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr husky_temperature_pub;
 
     std::vector<double> last_position_ = {0.0, 0.0, 0.0};
     rclcpp::Time last_time_;
@@ -51,8 +56,9 @@ private:
 
     double relative_x_ = 0.0, relative_y_ = 0.0, relative_z_ = 0.0;
     double relative_yaw_ = 0.0; // In radians
-    float battery_voltage, min_voltage = 12.0, max_voltage = 26.4; 
-    std_msgs::msg::Int32 battery_percentage;
+    float battery_voltage, min_voltage = 12.0, max_voltage = 26.4;
+    std_msgs::msg::Float32 driver_temp; 
+    std_msgs::msg::Float32 battery_percentage;
     
     void transformation_callback(const geometry_msgs::msg::Twist::SharedPtr twist_msg)
     {
@@ -75,88 +81,50 @@ private:
             return;
         }
 
-        // Extract position
-        double px = msg->pose.position.x;
-        double py = msg->pose.position.y;
-        double pz = msg->pose.position.z;
-
-        // Extract yaw from quaternion
-        tf2::Quaternion q(msg->pose.orientation.x, msg->pose.orientation.y,
-                          msg->pose.orientation.z, msg->pose.orientation.w);
-        double roll, pitch, yaw;
-        tf2::Matrix3x3(q).getRPY(roll, pitch, yaw);
-
-        // Rotation matrix for Z-axis rotation
-        double cos_theta = cos(relative_yaw_);
-        double sin_theta = sin(relative_yaw_);
-
-        double rotated_x = cos_theta * px - sin_theta * py;
-        double rotated_y = sin_theta * px + cos_theta * py;
-        double rotated_z = pz;
-
-        // Compute transformed position
-        double transformed_x = relative_x_ + rotated_x;
-        double transformed_y = relative_y_ + rotated_y;
-        double transformed_z = relative_z_ + rotated_z;
-        double transformed_yaw = yaw + relative_yaw_;
-
-        RCLCPP_INFO(this->get_logger(), "Transformed Position: [%.3f, %.3f, %.3f], Transformed Yaw: %.3f°",
-                    transformed_x, transformed_y, transformed_z, transformed_yaw * (180.0 / M_PI));
-
         // Compute velocity
-        double velocity = compute_velocity(transformed_x, transformed_y, transformed_z, msg->header.stamp);
-
+        std_msgs::msg::Float32 velocity = compute_velocity(msg->pose.position.x, msg->pose.position.y, msg->pose.position.z, msg->header.stamp);
+        husky_velocity_pub->publish(velocity);
+        
         // Create and publish Odometry message
         nav_msgs::msg::Odometry odom_msg;
         odom_msg.header = msg->header;
         odom_msg.child_frame_id = "base_link";
 
-        odom_msg.pose.pose.position.x = transformed_x;
-        odom_msg.pose.pose.position.y = transformed_y;
-        odom_msg.pose.pose.position.z = transformed_z;
-
-        // Convert yaw to quaternion
-        tf2::Quaternion transformed_quaternion;
-        transformed_quaternion.setRPY(0, 0, transformed_yaw);
-        odom_msg.pose.pose.orientation.x = transformed_quaternion.x();
-        odom_msg.pose.pose.orientation.y = transformed_quaternion.y();
-        odom_msg.pose.pose.orientation.z = transformed_quaternion.z();
-        odom_msg.pose.pose.orientation.w = transformed_quaternion.w();
-
-        // Set computed velocity
-        // odom_msg.twist.twist.linear.x = velocity;
-        // odom_msg.twist.twist.linear.y = 0.0; // Assuming 2D motion
-        // odom_msg.twist.twist.linear.z = 0.0;
+        odom_msg.pose.pose = msg->pose;
 
         odom_pub_->publish(odom_msg);
         RCLCPP_INFO(this->get_logger(), "Published Transformed Odometry with Speed: %.3f m/s", velocity);
     }
 
-    double compute_velocity(double x, double y, double z, rclcpp::Time current_time)
+    std_msgs::msg::Float32 compute_velocity(double x, double y, double z, rclcpp::Time current_time)
     {
+        std_msgs::msg::Float32 velocity;
         double dx = x - last_position_[0];
         double dy = y - last_position_[1];
         double dz = z - last_position_[2];
 
         double dt = (current_time - last_time_).seconds();
         if (dt == 0)
-            return 0.0;
+            return velocity;
 
-        double speed = std::sqrt(dx * dx + dy * dy + dz * dz) / dt;
-
+            double speed = std::sqrt(dx * dx + dy * dy + dz * dz) / dt;
+            velocity.data = static_cast<float>(speed);
+    
         // Update last position and time
         last_position_ = {x, y, z};
         last_time_ = current_time;
 
-        return speed;
+        return velocity;
     }
 
     void status_callback(const husky_msgs::msg::HuskyStatus husky_status_msg){
         battery_voltage = husky_status_msg.battery_voltage;
         battery_percentage.data = ((battery_voltage - min_voltage)/(max_voltage - min_voltage))*100;
+        driver_temp.data = (husky_status_msg.left_driver_temp + husky_status_msg.right_driver_temp)/2;
         RCLCPP_INFO(this->get_logger(), "Battery voltage is: %f and the percentage is %d ", battery_voltage, battery_percentage);
 
         husky_battery_pub->publish(battery_percentage);
+        husky_temperature_pub->publish(driver_temp);
     }
 };
 

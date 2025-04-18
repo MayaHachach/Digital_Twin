@@ -29,6 +29,8 @@ find_package(rosidl_default_generators REQUIRED)
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Object.msg"
   "msg/Temp.msg"
+  "msg/HuskyStatus.msg"
+  "msg/KobukiStatus.msg"
 
   "srv/RequestHistory.srv"
   "srv/RequestSTOD.srv"

@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.10)
 project(communication)
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
@@ -15,11 +18,15 @@ find_package(nav2_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(tf2 REQUIRED)
+find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(ament_index_cpp REQUIRED)
 find_package(nlohmann_json REQUIRED)
 find_package(husky_msgs REQUIRED)
 find_package(Eigen3 REQUIRED)
+find_package(yaml-cpp REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(irobot_create_msgs REQUIRED)
 
 
 # target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${EIGEN3_INCLUDE_DIRS})
@@ -33,16 +40,33 @@ target_include_directories(data_logger PUBLIC
   $<INSTALL_INTERFACE:include>
 )
 
-add_executable(communicator src/communicator.cpp)
-target_link_libraries(communicator data_logger)
-# target_include_directories(communicator PUBLIC ${EIGEN3_INCLUDE_DIRS})
-# target_link_libraries(communicator Eigen3::Eigen)
-ament_target_dependencies(communicator rclcpp nlohmann_json customed_interfaces geometry_msgs nav_msgs tf2 tf2_geometry_msgs Eigen3)
+add_executable(communicator_node
+  src/communicator.cpp
+  src/data_logger.cpp
+  src/robot_monitor/husky_robot.cpp
+  src/robot_monitor/kobuki_robot.cpp
+  src/robot_monitor/robot_monitor_factory.cpp
+)
 
-target_include_directories(communicator PUBLIC
+ament_target_dependencies(communicator_node
+  rclcpp
+  std_msgs
+  nav_msgs
+  geometry_msgs
+  customed_interfaces
+  nlohmann_json
+  yaml-cpp
+  sensor_msgs
+  irobot_create_msgs
+  husky_msgs
+)
+
+target_include_directories(communicator_node PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
 )
+
+target_link_libraries(communicator_node yaml-cpp)
 
 # add_executable(navigation src/navigation.cpp)
 # ament_target_dependencies(navigation rclcpp customed_interfaces geometry_msgs nav_msgs)
@@ -52,12 +76,11 @@ target_include_directories(communicator PUBLIC
 #   $<INSTALL_INTERFACE:include>
 # )
 
-add_executable(request_history_server src/request_history_server.cpp)
-ament_target_dependencies(request_history_server rclcpp std_msgs nlohmann_json ament_index_cpp customed_interfaces)
+add_executable(day0_creation src/day0_creation.cpp)
+ament_target_dependencies(day0_creation rclcpp std_msgs ament_index_cpp customed_interfaces)
 
-# add_executable(request_STOD_server src/request_STOD_server.cpp)
-# target_link_libraries(request_STOD_server data_logger)
-# ament_target_dependencies(request_STOD_server rclcpp std_msgs nlohmann_json ament_index_cpp customed_interfaces)
+add_executable(request_history_server src/request_history_server.cpp)
+ament_target_dependencies(request_history_server rclcpp std_msgs nlohmann_json ament_index_cpp customed_interfaces irobot_create_msgs husky_msgs)
 
 add_executable(request_history_client references/request_history_client.cpp)
 ament_target_dependencies(request_history_client rclcpp std_msgs nlohmann_json ament_index_cpp customed_interfaces)
@@ -65,13 +88,29 @@ ament_target_dependencies(request_history_client rclcpp std_msgs nlohmann_json a
 add_executable(husky_manager src/husky_manager.cpp)
 ament_target_dependencies(husky_manager rclcpp geometry_msgs nav_msgs tf2 tf2_geometry_msgs customed_interfaces husky_msgs)
 
+add_executable(setup_node src/setup.cpp)
+target_link_libraries(setup_node
+  data_logger
+  yaml-cpp
+)
+ament_target_dependencies(setup_node
+  rclcpp
+  std_msgs
+  geometry_msgs
+  nav_msgs
+  customed_interfaces
+  yaml-cpp
+)
+
+
 install(TARGETS
   data_logger
-  communicator
+  communicator_node
+  day0_creation
   request_history_server
-  # request_STOD_server
   request_history_client
   husky_manager
+  setup_node
   DESTINATION lib/${PROJECT_NAME}
 )
 
@@ -86,6 +125,13 @@ install(
   DIRECTORY launch/
   DESTINATION share/${PROJECT_NAME}/
 )
+
+# Install config files
+# install(
+#   DIRECTORY
+#   config/
+#   DESTINATION share/${PROJECT_NAME}/config
+# )
 
 # Install Python script properly
 install(

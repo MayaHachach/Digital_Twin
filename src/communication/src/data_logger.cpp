@@ -3,8 +3,10 @@
 DataLogger::DataLogger(const std::string &user_file_name)
 {
     // Resolve the path to the JSON file
-    auto package_path = ament_index_cpp::get_package_share_directory("communication");
-    log_file_path_ = package_path + "/" + user_file_name + ".json";
+    auto source_path = std::filesystem::path(__FILE__);
+    auto workspace_src = source_path.parent_path().parent_path().parent_path(); // Gets you to .../src/communication
+    auto history_dir = workspace_src / "communication" / "history";             // .../src/communication/history
+    log_file_path_ = (history_dir / (user_file_name + ".json")).string();
 
     // Initialize the JSON file (create if it doesn't exist)
     initializeJsonFile();
@@ -71,7 +73,7 @@ void DataLogger::logData(const nlohmann::json &new_entry)
         {
             file << log_data.dump(4); // Pretty print with 4 spaces
             file.close();
-            RCLCPP_INFO(rclcpp::get_logger("DataLogger"), "Data logged successfully.");
+            // RCLCPP_INFO(rclcpp::get_logger("DataLogger"), "Data logged successfully.");
         }
         else
         {
@@ -98,13 +100,13 @@ void DataLogger::logAllObjects(std::unordered_map<std::string, vector<DataLogger
     for (const auto &pair : objectMap)
     {
         const auto &objects = pair.second;
-        
+
         // Add all objects with the same name but different IDs to the JSON array
         for (const auto &obj : objects)
         {
             json_entry["objects"].push_back({{"name", obj.message.name + std::to_string(obj.message.id)},
-                                            {"id", obj.message.id},
-                                            {"topic_name", obj.topic_name},
+                                             {"id", obj.message.id},
+                                             {"topic_name", obj.topic_name},
                                              {"pose",
                                               {{"position", {obj.message.pose.position.x, obj.message.pose.position.y, obj.message.pose.position.z}},
                                                {"orientation", {obj.message.pose.orientation.w, obj.message.pose.orientation.x, obj.message.pose.orientation.y, obj.message.pose.orientation.z}}}},
@@ -113,6 +115,60 @@ void DataLogger::logAllObjects(std::unordered_map<std::string, vector<DataLogger
     }
 
     // Log the data to the JSON file
+    logData(json_entry);
+    RCLCPP_INFO(rclcpp::get_logger("Datalogger"), "Logged data for %zu objects", objectMap.size());
+}
+void DataLogger::logAllObjects(std::unordered_map<std::string, vector<DataLogger::object_map_struct>> &objectMap, std::map<std::string, std::shared_ptr<communication::RobotMonitor>> &robotMonitors)
+{
+    // Generate a timestamp
+    std::string timestamp = GetTimestamp();
+
+    // Create a JSON entry
+    nlohmann::json json_entry;
+    json_entry["timestamp"] = timestamp;
+    json_entry["objects"] = nlohmann::json::array();
+
+    // Add all objects in the map to the JSON array
+    for (const auto &pair : objectMap)
+    {
+        const auto &objects = pair.second;
+
+        // Add all objects with the same name but different IDs to the JSON array
+        for (const auto &obj : objects)
+        {
+            RCLCPP_INFO(rclcpp::get_logger("Datalogger"), "Logging object: %s with id %d", obj.message.name.c_str(), obj.message.id);
+            // if(robotMonitors.empty())
+            auto robot_name = obj.message.name + std::to_string(obj.message.id);
+            std::shared_ptr<communication::RobotMonitor> robot_monitor;
+            auto it = robotMonitors.find(robot_name);
+  
+            RCLCPP_INFO(rclcpp::get_logger("Datalogger"), "Found robot monitor for %s", robot_name.c_str());
+            nlohmann::json robot_status;
+
+            if(it != robotMonitors.end())
+            {
+                robot_monitor = it->second;
+                for (const auto &[robot_name, robot_data] : robot_monitor->getStatus().data)
+                {
+                    robot_status[robot_name] = robot_data;
+                }
+            }
+            else
+            {
+                RCLCPP_WARN(rclcpp::get_logger("Datalogger"), "No robot monitor found for %s", robot_name.c_str());
+            }
+            json_entry["objects"].push_back({{"name", obj.message.name + std::to_string(obj.message.id)},
+                                             {"id", obj.message.id},
+                                             {"topic_name", obj.topic_name},
+                                             {"pose",
+                                              {{"position", {obj.message.pose.position.x, obj.message.pose.position.y, obj.message.pose.position.z}},
+                                               {"orientation", {obj.message.pose.orientation.w, obj.message.pose.orientation.x, obj.message.pose.orientation.y, obj.message.pose.orientation.z}}}},
+                                             {"status", robot_status.empty() ? "No status available" : robot_status},
+                                             {"scale", {obj.message.scale.x, obj.message.scale.y, obj.message.scale.z}}});
+        }
+
+        // Log the data to the JSON file
+    }
     logData(json_entry);
     RCLCPP_INFO(rclcpp::get_logger("Datalogger"), "Logged data for %zu objects", objectMap.size());
 }
@@ -131,12 +187,12 @@ void DataLogger::logTempObjects(std::unordered_map<std::string, vector<customed_
     for (const auto &pair : Map)
     {
         const auto &objects = pair.second;
-        
+
         // Add all objects with the same name but different IDs to the JSON array
         for (const auto &obj : objects)
         {
             json_entry["objects"].push_back({{"name", obj.name + std::to_string(obj.id)},
-                                            {"id", obj.id},
+                                             {"id", obj.id},
                                              {"pose",
                                               {{"position", {obj.pose.position.x, obj.pose.position.y, obj.pose.position.z}},
                                                {"orientation", {obj.pose.orientation.w, obj.pose.orientation.x, obj.pose.orientation.y, obj.pose.orientation.z}}}},
@@ -175,6 +231,43 @@ nlohmann::json DataLogger::ROSMessageToJson(const customed_interfaces::msg::Obje
             {"scale", {msg.scale.x, msg.scale.y, msg.scale.z}} // Assuming message has scale
         }};
     return json_entry;
+}
+
+geometry_msgs::msg::Pose DataLogger::getLastPose(const std::string &name, int id)
+{
+    geometry_msgs::msg::Pose pose;
+    std::ifstream in_file(this->log_file_path_);
+    if (!in_file.is_open())
+    {
+        RCLCPP_ERROR(rclcpp::get_logger("Datalogger"), "Failed to open log file.");
+        return pose;
+    }
+
+    nlohmann::json json_data;
+    in_file >> json_data;
+
+    // Iterate backward to find the most recent entry
+    for (auto it = json_data.rbegin(); it != json_data.rend(); ++it)
+    {
+        for (const auto &obj : (*it)["objects"])
+        {
+            if (obj["name"].get<std::string>() == name + std::to_string(id))
+            {
+                pose.position.x = obj["pose"]["position"][0];
+                pose.position.y = obj["pose"]["position"][1];
+                pose.position.z = obj["pose"]["position"][2];
+
+                pose.orientation.w = obj["pose"]["orientation"][0];
+                pose.orientation.x = obj["pose"]["orientation"][1];
+                pose.orientation.y = obj["pose"]["orientation"][2];
+                pose.orientation.z = obj["pose"]["orientation"][3];
+                return pose;
+            }
+        }
+    }
+
+    RCLCPP_WARN(rclcpp::get_logger("Datalogger"), "Pose for %s%d not found in history.", name.c_str(), id);
+    return pose;
 }
 
 unordered_map<string, vector<DataLogger::object_map_struct>> DataLogger::loadLastIterationToMap()
@@ -220,7 +313,7 @@ unordered_map<string, vector<DataLogger::object_map_struct>> DataLogger::loadLas
             object_msg.message.scale.y = obj["scale"][1];
             object_msg.message.scale.z = obj["scale"][2];
 
-            object_map[object_msg.message.name].push_back(object_msg);  
+            object_map[object_msg.message.name].push_back(object_msg);
         }
 
         RCLCPP_INFO(rclcpp::get_logger("Datalogger"), "Initialized map with %zu objects from JSON.", object_map.size());
@@ -275,11 +368,10 @@ unordered_map<string, vector<customed_interfaces::msg::Object>> DataLogger::load
             temp_msg.scale.y = obj["scale"][1];
             temp_msg.scale.z = obj["scale"][2];
 
-            temp_map[temp_msg.name].push_back(temp_msg);  
+            temp_map[temp_msg.name].push_back(temp_msg);
         }
 
         RCLCPP_INFO(rclcpp::get_logger("Datalogger"), "Initialized temp map with %zu objects from JSON.", temp_map.size());
-        
     }
     catch (const std::exception &e)
     {
@@ -289,18 +381,17 @@ unordered_map<string, vector<customed_interfaces::msg::Object>> DataLogger::load
     return temp_map;
 }
 
-
 // Function to remove the numeric ID from the end of a name
-std::string DataLogger::removeIDFromName(const std::string &name, int id) {
+std::string DataLogger::removeIDFromName(const std::string &name, int id)
+{
     std::string idStr = std::to_string(id); // Convert ID to string
-    size_t idLength = idStr.length(); // Get length of ID string
+    size_t idLength = idStr.length();       // Get length of ID string
 
     // Check if name ends with the ID string
-    if (name.length() >= idLength && name.substr(name.length() - idLength) == idStr) {
+    if (name.length() >= idLength && name.substr(name.length() - idLength) == idStr)
+    {
         return name.substr(0, name.length() - idLength); // Remove ID from name
     }
 
     return name; // Return original name if ID not found at the end
 }
-
-
