@@ -4,9 +4,13 @@ DataLogger::DataLogger(const std::string &user_file_name)
 {
     // Resolve the path to the JSON file
     auto source_path = std::filesystem::path(__FILE__);
+    RCLCPP_INFO(rclcpp::get_logger("DataLogger"), "source path: %s", source_path.c_str());
     auto workspace_src = source_path.parent_path().parent_path().parent_path(); // Gets you to .../src/communication
+    RCLCPP_INFO(rclcpp::get_logger("DataLogger"), "workspace path: %s", log_file_path_.c_str());
     auto history_dir = workspace_src / "communication" / "history";             // .../src/communication/history
     log_file_path_ = (history_dir / (user_file_name + ".json")).string();
+
+    RCLCPP_INFO(rclcpp::get_logger("DataLogger"), "log path: %s", log_file_path_.c_str());
 
     // Initialize the JSON file (create if it doesn't exist)
     initializeJsonFile();

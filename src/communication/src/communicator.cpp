@@ -17,7 +17,7 @@ CommunicatorNode::CommunicatorNode() : Node("communicator_node"), logger_("initi
 }
 
 // Subscription Callbacks
-void CommunicatorNode::objectUpdate(const customed_interfaces::msg::Object::SharedPtr msg)
+void CommunicatorNode:: objectUpdate(const customed_interfaces::msg::Object::SharedPtr msg)
 {
     // Check if the message is the same as the last one
     if (last_message_ != nullptr && isMessageEqual(*msg, *last_message_))
@@ -350,6 +350,9 @@ void CommunicatorNode::InitializePublishers()
 
 void CommunicatorNode::InitializeSubscribers()
 {
+    rclcpp::QoS qos_profile(10);
+    qos_profile.best_effort();
+
     hololens_object_subscriber = this->create_subscription<customed_interfaces::msg::Object>(
         "/hololensObject", 10,
         std::bind(&CommunicatorNode::objectUpdate, this, std::placeholders::_1));
@@ -365,7 +368,7 @@ void CommunicatorNode::InitializeSubscribers()
         const std::string &topic_name = pair.first;
 
         robot_odom_subscribers_.push_back(this->create_subscription<nav_msgs::msg::Odometry>(
-            topic_name, 10,
+            topic_name, qos_profile,
             [this, topic_name](const nav_msgs::msg::Odometry::SharedPtr msg)
             {
                 this->robotOdomCallback(topic_name, msg);
@@ -389,13 +392,6 @@ void CommunicatorNode::InitializeRobotMonitor()
     auto config_dir = workspace_src / "Digital_Twin" / "src" / "communication" / "config";
     auto config_path = config_dir / "robots.yaml";
     
-    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    if (!std::filesystem::exists(config_path) || std::filesystem::is_empty(config_path))
-    {
-        RCLCPP_ERROR(this->get_logger(), "Config file is empty: %s", config_path.string().c_str());
-        return;
-    }
-
     std::map<std::string, RobotConfig> robot_configs = loadRobotConfigs(config_path);
 
     // Initialize robot monitors with the loaded configurations
