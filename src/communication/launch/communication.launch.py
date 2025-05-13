@@ -5,12 +5,14 @@ from ament_index_python.packages import get_package_share_directory
 
 
 def generate_launch_description():
-    
     # Get the package share directory
     pkg_share_dir = get_package_share_directory('communication')
     
     # Define the config file path
-    config_file = os.path.join(pkg_share_dir, 'config', 'robots.yaml')
+    # domain_bridge_config = os.path.join(
+    #     '/home/maya/workspaces/Digital_Twin/src/communication/config',
+    #     'domain_bridge_config.yaml'
+    # )
 
     communicator_node = Node(
         package='communication',
@@ -18,7 +20,7 @@ def generate_launch_description():
         name='communicator_node',
         output='screen',
         parameters=[{
-            'config_path': config_file
+            'config_path': os.path.join(pkg_share_dir, 'config', 'robots.yaml')
         }]
     )
     
@@ -29,11 +31,19 @@ def generate_launch_description():
         output='screen'
     )
 
+    # domain_bridge_node = Node(
+    #     package='domain_bridge',
+    #     executable='domain_bridge',
+    #     name='domain_bridge',
+    #     output='screen',
+    #     arguments=[domain_bridge_config]
+    # )
+
     # Create and return launch description
     ld = LaunchDescription()
 
     ld.add_action(communicator_node)
-    
     ld.add_action(request_history_server)
+    # ld.add_action(domain_bridge_node)
 
     return ld

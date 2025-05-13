@@ -24,6 +24,7 @@ find_package(sensor_msgs REQUIRED)
 find_package(octomap_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
+find_package(nav_msgs REQUIRED)
 
 
 rosidl_generate_interfaces(${PROJECT_NAME}
@@ -35,7 +36,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/RequestHistory.srv"
   "srv/RequestSTOD.srv"
 
-  DEPENDENCIES sensor_msgs geometry_msgs octomap_msgs std_msgs rclcpp
+  DEPENDENCIES sensor_msgs geometry_msgs octomap_msgs std_msgs rclcpp nav_msgs
  )
 
  ament_export_dependencies(rosidl_default_runtime)

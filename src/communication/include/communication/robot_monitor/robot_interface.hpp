@@ -2,6 +2,7 @@
 #define ROBOT_INTERFACE_HPP__
 
 #include <rclcpp/rclcpp.hpp>
+#include <nav_msgs/msg/path.hpp>
 #include <string>
 #include <memory>
 
@@ -12,6 +13,7 @@ namespace communication
         std::string robot_id;
         std::string robot_type;
         std::map<std::string, double> data; // For any extra data specific to robot type
+        nav_msgs::msg::Path navigation_path_data;
 
         // default constructor
         RobotStatus(){}
@@ -31,6 +33,14 @@ namespace communication
 
         //Pure virtual function to initialize subscribers
         virtual void initializeSubscribers(const std::map<std::string, std::string> &topics) = 0;
+
+        //set the navigation path
+        void setNavigationPath(const nav_msgs::msg::Path &path)
+        {
+            status_.navigation_path_data = path;
+            RCLCPP_INFO(rclcpp::get_logger("RobotMonitor"), "Set navigation path for robot %s", robot_id_.c_str());
+
+        }
 
         //Get the current status
         const RobotStatus &getStatus() const

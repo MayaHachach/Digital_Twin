@@ -5,19 +5,20 @@ communicator_node:
         type: Husky
         topics:
           odometry: /transformed_odom
+          navigation:
+            navigation_path: e.g. /Husky1/transformed_global_plan
+            navigation_status: e.g. /Husky1/navigate_to_pose/_action/status
           feedback:
-            robot_status: /Husky1/status
-      Husky2:
-        type: Husky
-        topics:
-          odometry: e.g. /Husky2/odom
-          feedback:
-            robot_status: e.g. /Husky2/status
+            robot_status: /husky/status
+
       Kobuki1:
         type: Kobuki
         topics:
-          odometry: /kobuki_1/odom
+          odometry: /slam_odom
+          navigation:
+            navigation_path: /transformed_global_plan
+            navigation_status: /navigate_to_pose/_action/status
           feedback:
             battery_state: /battery_state
             wheel_vel: /wheel_vels
-            wheel_status: /wheel_status
+            navigation_path: /plan 

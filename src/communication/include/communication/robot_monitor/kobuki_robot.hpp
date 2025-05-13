@@ -6,6 +6,7 @@
 #include <sensor_msgs/msg/battery_state.hpp>
 #include <irobot_create_msgs/msg/wheel_status.hpp>
 #include <irobot_create_msgs/msg/wheel_vels.hpp>
+#include <nav_msgs/msg/path.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 namespace communication
@@ -28,6 +29,7 @@ namespace communication
         void batteryCallback(const sensor_msgs::msg::BatteryState::SharedPtr msg);
         void wheelStatusCallback(const irobot_create_msgs::msg::WheelStatus::SharedPtr msg);
         void wheelVelsCallback(const irobot_create_msgs::msg::WheelVels::SharedPtr msg);
+        // void navigationPathCallback(const nav_msgs::msg::Path::SharedPtr msg);
 
     private:
         rclcpp::Node::SharedPtr node_;
@@ -36,7 +38,7 @@ namespace communication
         rclcpp::Subscription<irobot_create_msgs::msg::WheelStatus>::SharedPtr wheel_status_subscriber_;
         rclcpp::Subscription<irobot_create_msgs::msg::WheelVels>::SharedPtr wheel_vels_subscriber_;
         rclcpp::Publisher<customed_interfaces::msg::KobukiStatus>::SharedPtr status_publisher_;
-
+        rclcpp::Subscription<nav_msgs::msg::Path>::SharedPtr navigation_path_subscriber_;
         
         customed_interfaces::msg::KobukiStatus robot_status_;
         void fillPublisherMsg();

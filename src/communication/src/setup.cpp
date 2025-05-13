@@ -71,6 +71,8 @@ void SetupNode::GenerateConfigFile()
                 std::string robot_name = entry + std::to_string(obj.message.id);
                 robots_node[robot_name]["type"] = entry;
                 robots_node[robot_name]["topics"]["odometry"] = "e.g. /" + robot_name + "/odom";
+                robots_node[robot_name]["topics"]["navigation"]["navigation_path"] = "e.g. /" + robot_name + "/transformed_global_plan";
+                robots_node[robot_name]["topics"]["navigation"]["navigation_status"] = "e.g. /" + robot_name + "/navigate_to_pose/_action/status";
                 robots_node[robot_name]["topics"]["feedback"]["robot_status"] = "e.g. /" + robot_name + "/status";
             }
         }

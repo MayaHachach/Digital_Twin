@@ -7,7 +7,7 @@ DataLogger::DataLogger(const std::string &user_file_name)
     RCLCPP_INFO(rclcpp::get_logger("DataLogger"), "source path: %s", source_path.c_str());
     auto workspace_src = source_path.parent_path().parent_path().parent_path(); // Gets you to .../src/communication
     RCLCPP_INFO(rclcpp::get_logger("DataLogger"), "workspace path: %s", log_file_path_.c_str());
-    auto history_dir = workspace_src / "communication" / "history";             // .../src/communication/history
+    auto history_dir = workspace_src / "communication" / "history"; // .../src/communication/history
     log_file_path_ = (history_dir / (user_file_name + ".json")).string();
 
     RCLCPP_INFO(rclcpp::get_logger("DataLogger"), "log path: %s", log_file_path_.c_str());
@@ -90,6 +90,7 @@ void DataLogger::logData(const nlohmann::json &new_entry)
     }
 }
 
+
 void DataLogger::logAllObjects(std::unordered_map<std::string, vector<DataLogger::object_map_struct>> &objectMap)
 {
     // Generate a timestamp
@@ -122,6 +123,7 @@ void DataLogger::logAllObjects(std::unordered_map<std::string, vector<DataLogger
     logData(json_entry);
     RCLCPP_INFO(rclcpp::get_logger("Datalogger"), "Logged data for %zu objects", objectMap.size());
 }
+
 void DataLogger::logAllObjects(std::unordered_map<std::string, vector<DataLogger::object_map_struct>> &objectMap, std::map<std::string, std::shared_ptr<communication::RobotMonitor>> &robotMonitors)
 {
     // Generate a timestamp
@@ -145,18 +147,29 @@ void DataLogger::logAllObjects(std::unordered_map<std::string, vector<DataLogger
             auto robot_name = obj.message.name + std::to_string(obj.message.id);
             std::shared_ptr<communication::RobotMonitor> robot_monitor;
             auto it = robotMonitors.find(robot_name);
-  
+
             RCLCPP_INFO(rclcpp::get_logger("Datalogger"), "Found robot monitor for %s", robot_name.c_str());
             nlohmann::json robot_status;
+            nlohmann::json robot_navigation_path;
 
-            if(it != robotMonitors.end())
+            if (it != robotMonitors.end())
             {
                 robot_monitor = it->second;
                 for (const auto &[robot_name, robot_data] : robot_monitor->getStatus().data)
                 {
                     robot_status[robot_name] = robot_data;
+                    RCLCPP_INFO(rclcpp::get_logger("Datalogger"), "Robot status: %s", robot_status.dump().c_str());
+                }
+
+                // navigation_path
+                const auto &path = robot_monitor->getStatus().navigation_path_data;
+                for (const auto &pose_stamped : path.poses)
+                {
+                    robot_navigation_path["poses"].push_back({{"position", {pose_stamped.pose.position.x, pose_stamped.pose.position.y, pose_stamped.pose.position.z}},
+                                                              {"orientation", {pose_stamped.pose.orientation.w, pose_stamped.pose.orientation.x, pose_stamped.pose.orientation.y, pose_stamped.pose.orientation.z}}});
                 }
             }
+
             else
             {
                 RCLCPP_WARN(rclcpp::get_logger("Datalogger"), "No robot monitor found for %s", robot_name.c_str());
@@ -168,6 +181,7 @@ void DataLogger::logAllObjects(std::unordered_map<std::string, vector<DataLogger
                                               {{"position", {obj.message.pose.position.x, obj.message.pose.position.y, obj.message.pose.position.z}},
                                                {"orientation", {obj.message.pose.orientation.w, obj.message.pose.orientation.x, obj.message.pose.orientation.y, obj.message.pose.orientation.z}}}},
                                              {"status", robot_status.empty() ? "No status available" : robot_status},
+                                             {"navigation_path", robot_navigation_path.empty() ? "No navigation path available" : robot_navigation_path},
                                              {"scale", {obj.message.scale.x, obj.message.scale.y, obj.message.scale.z}}});
         }
 

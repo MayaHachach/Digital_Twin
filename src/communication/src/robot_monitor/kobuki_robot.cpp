@@ -16,10 +16,12 @@ namespace communication
         try
         {
             RCLCPP_INFO(this->node_->get_logger(), "Initializing subscribers...");
+
             for (const auto& topic : topics)
             {
                 RCLCPP_INFO(this->node_->get_logger(), "Found topic: %s", topic.first.c_str());
             }
+
             // Initialize battery subscriber
             auto battery_it = topics.find("battery_state");
             if (battery_it != topics.end())
@@ -52,6 +54,17 @@ namespace communication
 
                 RCLCPP_INFO(this->node_->get_logger(), "Created Kobuki wheel velocities subscriber for topic: %s", wheel_vels_it->second.c_str());
             }
+
+            // auto navigation_path_it = topics.find("navigation_path");
+            // if (navigation_path_it != topics.end())
+            // {
+            //     navigation_path_subscriber_ = this->node_->create_subscription<nav_msgs::msg::Path>(
+            //         navigation_path_it->second, 10,
+            //         std::bind(&KobukiRobotMonitor::navigationPathCallback, this, std::placeholders::_1));
+
+            //     RCLCPP_INFO(this->node_->get_logger(), "Created Kobuki navigation path subscriber for topic: %s",
+            //                 navigation_path_it->second.c_str());
+            // }
         }
         catch (const std::exception &e)
         {
@@ -108,6 +121,13 @@ namespace communication
         fillPublisherMsg();
     }
 
+    // void KobukiRobotMonitor::navigationPathCallback(const nav_msgs::msg::Path::SharedPtr msg)
+    // {
+        // status_.navigation_path_data = *msg;
+
+        // fillPublisherMsg();
+    // }
+
     void KobukiRobotMonitor::fillPublisherMsg()
     {
         // Fill the custom message with the status data
@@ -125,6 +145,7 @@ namespace communication
         robot_status_.angular_velocity = status_.data["angular_velocity"];
         robot_status_.velocity_left = status_.data["left_wheel_velocity"];
         robot_status_.velocity_right = status_.data["right_wheel_velocity"];
+        // robot_status_.path = status_.navigation_path_data;
 
         // Publish the custom message
         status_publisher_->publish(robot_status_);

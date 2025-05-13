@@ -6,7 +6,7 @@ from launch.substitutions import LaunchConfiguration
 
 def generate_launch_description():
     ros_ip_arg = DeclareLaunchArgument(
-        'ROS_IP', default_value="10.211.148.15"
+        'ROS_IP', default_value="10.42.71.15"
         
     )
     ros_port_arg = DeclareLaunchArgument(

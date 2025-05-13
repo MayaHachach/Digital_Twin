@@ -18,3 +18,6 @@ float32 voltage          # Voltage in Volts (Mandatory)
 float32 temperature      # Temperature in Degrees Celsius (If unmeasured NaN)
 float32 current          # Negative when discharging (A)  (If unmeasured NaN)
 float32 percentage       # Charge percentage on 0 to 1 range  (If unmeasured NaN)
+
+#navigation_path
+nav_msgs/Path path 

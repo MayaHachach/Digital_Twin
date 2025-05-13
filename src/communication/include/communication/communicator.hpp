@@ -53,6 +53,7 @@ private:
     rclcpp::Subscription<customed_interfaces::msg::Object>::SharedPtr human_correction_subscriber;
     rclcpp::Subscription<customed_interfaces::msg::Temp>::SharedPtr temp_response_subscriber;
     vector<rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr> robot_odom_subscribers_;
+    vector<rclcpp::Subscription<nav_msgs::msg::Path>::SharedPtr> navigation_path_subscribers_;
 
     //? publishers
     rclcpp::Publisher<customed_interfaces::msg::Object>::SharedPtr omniverse_publisher;
@@ -60,6 +61,7 @@ private:
     rclcpp::Publisher<customed_interfaces::msg::Temp>::SharedPtr temp_count_publisher;
     rclcpp::Publisher<customed_interfaces::msg::HuskyStatus>::SharedPtr object_status_publisher;
     rclcpp::Publisher<customed_interfaces::msg::KobukiStatus>::SharedPtr kobuki_status_publisher;
+    rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr navigation_path_publisher;
 
     // Timer for publishing robot status
     rclcpp::TimerBase::SharedPtr status_publish_timer_;
@@ -110,6 +112,14 @@ private:
         bool recalculate_transformation = false;
     };
 
+    struct navigation_struct
+    {
+        string class_name;
+        int id;
+        nav_msgs::msg::Path path_msg;
+        bool recalculate_transformation = false;
+    };
+
     // std::unordered_map<std::string, topics_struct> odom_topics =
     //     {
     //         {"/transformed_odom", {"Husky", 1}},
@@ -117,12 +127,14 @@ private:
 
     std::unordered_map<std::string, topics_struct> odom_topics;
 
+    std::unordered_map<std::string, navigation_struct> navigation_topics;
+
     std::unordered_map<std::string, vector<DataLogger::object_map_struct>> object_map_;
 
     unordered_map<string, vector<customed_interfaces::msg::Object>> temp_map;
 
     // Robot monitors
-    std::map<std::string, std::shared_ptr<communication::RobotMonitor>> robot_monitors_;
+    std::map<std::string, std::shared_ptr<communication::RobotMonitor>> robot_monitors_; // [robot_name & id, robot_monitor_class]
 
     //? Methods
     // general usage methods
@@ -144,6 +156,7 @@ private:
     Eigen::Matrix4d poseToTransformation(const geometry_msgs::msg::Pose &pose);
     nav_msgs::msg::Odometry TransformationToPose(const Eigen::Matrix4d transformation_matrix);
     std::map<std::string, RobotConfig> loadRobotConfigs(const std::string &filename);
+    bool isOdomReset(const std::string &topic_name, const builtin_interfaces::msg::Time &current_stamp);
 
     // callbacks
     void objectCallback(const customed_interfaces::msg::Object::SharedPtr msg);
@@ -152,6 +165,7 @@ private:
     void tempResponseCallback(const customed_interfaces::msg::Temp::SharedPtr temp_response_msg);
     void STODExtractionCallback(const customed_interfaces::msg::Object::SharedPtr object_msg);
     void robotOdomCallback(const std::string &topic_name, const nav_msgs::msg::Odometry::SharedPtr msg);
+    void navigationPathCallback(const std::string &topic_name, const nav_msgs::msg::Path::SharedPtr msg);
 
     // services methods
     void publishHololensSTOD();

@@ -10,17 +10,31 @@ and then u can examine the folders and files
 
 -----------------------------------------------------------------------------------------
 
-Before running:
-- go to the param file and edit the following information:
+Day 0 Extraction:
 
------------------------------------------------------------------------------------------
+Before running anything, it is required to extract the day 0 information that we will be working on.
 
-How to run:
-- build the system using colcon build
 
 If you dont have Day 0 information:
 - run the day0 creation standalone node using the following command:\
 ros2 run communication day0_creation
+
+
+If you do have Day0 information, create a publisher that publishes these information and then go through the following steps:
+
+- Run the setup node using the following command: ros2 run communication setup_node
+
+- A config file for robots is auto-generated inside the config file in /Digital_Twin/src/communication/config/robots.yaml
+It is important to edit this config file and fill the odometry topic name and the status topic names with their titles.
+Note: every topic name that starts with e.g. is not taken into consideration.
+
+- build the workspace using colcon build command
+
+- source the workspace using the source install/setup.bash command
+
+-----------------------------------------------------------------------------------------
+
+How to run the digital twin update system:
 
 After having the day0 information:
 - run the launch file: ros2 launch communication communication.launch.py
@@ -34,8 +48,6 @@ to communicate with hololens:
 -----------------------------------------------------------------------------------------
 
 Main functionalities and how to use them:
-
-1- Day 0 extraction:
 
 2- Automatic update:
 
