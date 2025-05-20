@@ -1,5 +1,6 @@
 #include "communication/communicator.hpp"
 #include <filesystem>
+#include <cstring>
 
 CommunicatorNode::CommunicatorNode() : Node("communicator_node"), logger_("initial_history"), temp_logger("temp_history")
 {
@@ -187,14 +188,15 @@ void CommunicatorNode::robotOdomCallback(const std::string &topic_name, const na
     object.message.pose = topicInfo.odom_msg.pose.pose;
 
     omniverse_publisher->publish(object.message);
-    PrintSTOD();
-    logger_.logAllObjects(object_map_, robot_monitors_);
+    // logger_.logAllObjects(object_map_, robot_monitors_);
 }
 
-void CommunicatorNode::navigationPathCallback(const std::string &topic_name, const nav_msgs::msg::Path::SharedPtr msg)
+void CommunicatorNode::navigationPathCallback(CommunicatorNode::navigation_struct &topicInfo, const nav_msgs::msg::Path::SharedPtr msg)
 {
-    auto &topicInfo = navigation_topics[topic_name];
+    // auto &topicInfo = navigation_topics[topic_name];
+    auto topic_name = topicInfo.navigation_path_topic_name;
     RCLCPP_INFO(this->get_logger(), "Subscribed to navigation topic: %s", topic_name.c_str());
+    RCLCPP_INFO(this->get_logger(), "%s robot", topicInfo.class_name.c_str());
 
     if (!isObjectInSTOD(topicInfo.class_name, topicInfo.id))
     {
@@ -210,7 +212,7 @@ void CommunicatorNode::navigationPathCallback(const std::string &topic_name, con
 
     RCLCPP_WARN(this->get_logger(), "robot: %s", robot.c_str());
 
-    // Eigen::Matrix4d T_odom_QR = odom_topics.find(object_map_[topicInfo.class_name][topicInfo.id - 1].topic_name)->second.T_global_frame;
+    // //Eigen::Matrix4d T_odom_QR = odom_topics.find(object_map_[topicInfo.class_name][topicInfo.id - 1].topic_name)->second.T_global_frame;
     auto &odom_topic = object_map_.at(topicInfo.class_name)[topicInfo.id - 1].topic_name;
 
     if (odom_topic.empty())
@@ -219,9 +221,32 @@ void CommunicatorNode::navigationPathCallback(const std::string &topic_name, con
         return;
     }
 
-    auto it = odom_topics.find(odom_topic);
-    Eigen::Matrix4d T_odom_QR = it->second.T_global_frame;
+    // auto it = odom_topics.find(odom_topic);
+    // Eigen::Matrix4d T_odom_QR = it->second.T_global_frame;
+    auto &odom_info = odom_topics.at(odom_topic);
 
+    // Recalculate transformation only when marked
+    if (odom_info.recalculate_transformation || odom_info.T_global_frame.isIdentity())
+    {
+        if (!isObjectInSTOD(topicInfo.class_name, topicInfo.id))
+        {
+            RCLCPP_WARN(this->get_logger(), "Object not found in STOD during transformation update.");
+            return;
+        }
+
+        auto &object = object_map_.at(topicInfo.class_name)[topicInfo.id - 1];
+        Eigen::Matrix4d T_object = poseToTransformation(object.message.pose);
+        Eigen::Matrix4d T_odom = poseToTransformation(odom_info.odom_msg.pose.pose);
+        odom_info.T_global_frame = T_object * T_odom.inverse();
+        odom_info.recalculate_transformation = false;
+
+        RCLCPP_INFO(this->get_logger(), "Updated T_global_frame for %s %d", topicInfo.class_name.c_str(), topicInfo.id);
+        printMatrix(odom_info.T_global_frame, "T_global_frame");
+    }
+
+    Eigen::Matrix4d T_odom_QR = odom_info.T_global_frame;
+
+    RCLCPP_WARN(this->get_logger(), "Path is not cleared, using the last path");
     for (auto &pose : msg->poses)
     {
         Eigen::Matrix4d T_path_odom = poseToTransformation(pose.pose);
@@ -240,7 +265,36 @@ void CommunicatorNode::navigationPathCallback(const std::string &topic_name, con
 
     // save navigation path to the monitoring class
     robot_monitors_[robot]->setNavigationPath(transformed_path);
-    logger_.logAllObjects(object_map_, robot_monitors_);
+    // logger_.logAllObjects(object_map_, robot_monitors_);
+}
+
+void CommunicatorNode::navigationStatusCallback(CommunicatorNode::navigation_struct &nav_data, const action_msgs::msg::GoalStatusArray::SharedPtr msg)
+{
+    RCLCPP_INFO(this->get_logger(), "Navigation status callback received for topic: %s", nav_data.navigation_path_topic_name.c_str());
+    std::string robot = nav_data.class_name + std::to_string(nav_data.id);
+
+    for (const auto &goal_status : msg->status_list)
+    {
+        auto status_code = goal_status.status;
+        RCLCPP_INFO(this->get_logger(), "Navigation status: %d", status_code);
+        std::string uuid = uuid_to_string(goal_status.goal_info.goal_id.uuid);
+
+        if (handled_goals_.find(uuid) != handled_goals_.end())
+        {
+            continue;
+        }
+
+        if (status_code == 4 || status_code == 5 || status_code == 6)
+        {
+            RCLCPP_INFO(this->get_logger(), "✅ Goal %s succeeded!", uuid.c_str());
+            handled_goals_.insert(uuid);
+            nav_msgs::msg::Path transformed_path;
+            transformed_path.header.frame_id = robot;
+            transformed_path.poses.clear();
+            navigation_path_publisher->publish(transformed_path);
+            nav_data.clear_path = true;
+        }
+    }
 }
 
 void CommunicatorNode::tempResponseCallback(const customed_interfaces::msg::Temp::SharedPtr temp_response_msg)
@@ -297,7 +351,7 @@ void CommunicatorNode::tempResponseCallback(const customed_interfaces::msg::Temp
     temp_message.number = temp_map[temp_response_msg->name].size();
     temp_count_publisher->publish(temp_message);
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     // publish object locations to hololens
     for (auto &object : object_map_[temp_response_msg->name])
@@ -359,18 +413,6 @@ void CommunicatorNode::handleRequest(const std::shared_ptr<customed_interfaces::
 
     if (request_->agent_name == "omniverse")
     {
-        // // Process omniverse requests only once. (because omnivere cant send a request only once on startup, it keeps on sending the request while it is required to be sent only once)
-        // if (request_processed_)
-        // {
-        //     if (request_processed_counter == 0)
-        //     {
-        //         RCLCPP_WARN(this->get_logger(), "STOD was sent previously to omniverse, you need to rerun the server for another omniverse request.");
-        //         request_processed_counter = 1;
-        //     }
-        //     response_->success = false;
-        //     return;
-        // }
-
         publishOmniverseSTOD();
         // request_processed_ = true; // Mark as processed
         response_->success = true;
@@ -428,16 +470,28 @@ void CommunicatorNode::InitializeSubscribers()
             }));
     }
 
-    for (auto &pair : navigation_topics)
+    for (auto &[robot_name, nav_data] : navigation_topics)
     {
-        const std::string &topic_name = pair.first;
-
-        navigation_path_subscribers_.push_back(this->create_subscription<nav_msgs::msg::Path>(
-            topic_name, qos_profile,
-            [this, topic_name](const nav_msgs::msg::Path::SharedPtr msg)
-            {
-                this->navigationPathCallback(topic_name, msg);
-            }));
+        const std::string &path_topic = nav_data.navigation_path_topic_name;
+        const std::string &status_topic = nav_data.navigation_status_topic_name;
+        if (!path_topic.empty())
+        {
+            navigation_path_subscribers_.push_back(this->create_subscription<nav_msgs::msg::Path>(
+                path_topic, qos_profile,
+                [this, &nav_data](const nav_msgs::msg::Path::SharedPtr msg)
+                {
+                    this->navigationPathCallback(nav_data, msg);
+                }));
+        }
+        if (!status_topic.empty())
+        {
+            navigation_status_subscribers_.push_back(this->create_subscription<action_msgs::msg::GoalStatusArray>(
+                status_topic, qos_profile,
+                [this, &nav_data](const action_msgs::msg::GoalStatusArray::SharedPtr msg)
+                {
+                    this->navigationStatusCallback(nav_data, msg);
+                }));
+        }
     }
 }
 
@@ -446,6 +500,17 @@ void CommunicatorNode::InitializeServices()
     STOD_service = this->create_service<customed_interfaces::srv::RequestSTOD>(
         "request_STOD",
         std::bind(&CommunicatorNode::handleRequest, this, std::placeholders::_1, std::placeholders::_2));
+}
+
+std::string CommunicatorNode::uuid_to_string(const std::array<uint8_t, 16> &uuid)
+{
+    std::stringstream ss;
+    ss << std::hex << std::setfill('0');
+    for (const auto &byte : uuid)
+    {
+        ss << std::setw(2) << static_cast<int>(byte);
+    }
+    return ss.str();
 }
 
 void CommunicatorNode::InitializeRobotMonitor()
@@ -577,6 +642,7 @@ void CommunicatorNode::fillOdomTopics()
     }
 
     // Check if odom_topics is already initialized
+    //! does it work ? this block is callled once in the constructor
     if (!odom_topics.empty())
     {
         RCLCPP_INFO(this->get_logger(), "odom_topics is already initialized, assigning topic names to object_map.");
@@ -601,6 +667,8 @@ void CommunicatorNode::fillOdomTopics()
             {
                 std::string robot_name = robot_entry.first.as<std::string>();
                 std::string robot_type = robot_entry.second["type"].as<std::string>();
+                std::string number_part = std::string(robot_name.begin() + robot_type.length(), robot_name.end());
+                int id = std::stoi(number_part);
 
                 if (robot_entry.second["topics"] && robot_entry.second["topics"]["odometry"])
                 {
@@ -618,6 +686,10 @@ void CommunicatorNode::fillOdomTopics()
                     }
                 }
 
+                navigation_struct nav_data;
+                nav_data.class_name = robot_type;
+                nav_data.id = id;
+
                 if (robot_entry.second["topics"] && robot_entry.second["topics"]["navigation"]["navigation_path"])
                 {
                     std::string navigation_path_topic = robot_entry.second["topics"]["navigation"]["navigation_path"].as<std::string>();
@@ -625,14 +697,33 @@ void CommunicatorNode::fillOdomTopics()
                     // Skip default placeholders like "e.g."
                     if (!navigation_path_topic.empty() && navigation_path_topic.find("e.g.") == std::string::npos)
                     {
-                        std::string number_part = std::string(robot_name.begin() + robot_type.length(), robot_name.end());
-                        int id = std::stoi(number_part);
 
-                        navigation_topics[navigation_path_topic] = navigation_struct{robot_type, id};
+                        nav_data.navigation_path_topic_name = navigation_path_topic;
+
+                        // navigation_topics[navigation_path_topic] = nav_data;
                         RCLCPP_INFO(this->get_logger(), "Loaded navigation path topic from config: %s -> (%s, %d)",
                                     navigation_path_topic.c_str(), robot_type.c_str(), id);
                     }
                 }
+
+                if (robot_entry.second["topics"] && robot_entry.second["topics"]["navigation"]["navigation_status"])
+                {
+                    std::string navigation_status_topic = robot_entry.second["topics"]["navigation"]["navigation_status"].as<std::string>();
+
+                    // Skip default placeholders like "e.g."
+                    if (!navigation_status_topic.empty() && navigation_status_topic.find("e.g.") == std::string::npos)
+                    {
+
+                        nav_data.navigation_status_topic_name = navigation_status_topic;
+                        nav_data.clear_path = false;
+
+                        // navigation_topics[navigation_path_topic] = nav_data;
+                        RCLCPP_INFO(this->get_logger(), "Loaded navigation status topic from config: %s -> (%s, %d)",
+                                    navigation_status_topic.c_str(), robot_type.c_str(), id);
+                    }
+                }
+
+                navigation_topics[robot_name] = nav_data;
             }
 
             if (odom_topics.empty())
@@ -926,7 +1017,7 @@ void CommunicatorNode::publishOmniverseSTOD()
             RCLCPP_INFO(this->get_logger(), "  ID: %d, Position: [%.2f, %.2f, %.2f], Topic: %s",
                         obj.message.id, obj.message.pose.position.x, obj.message.pose.position.y, obj.message.pose.position.z, obj.topic_name.c_str());
             STOD_omniverse_publisher->publish(obj.message);
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
     }
     RCLCPP_INFO(this->get_logger(), "Published %ld object_classes to /omniverseSTOD", object_map_.size());
@@ -970,3 +1061,4 @@ int main(int argc, char *argv[])
     rclcpp::shutdown();
     return 0;
 }
+

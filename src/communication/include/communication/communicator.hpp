@@ -25,6 +25,7 @@
 
 #include "std_msgs/msg/int32.hpp"
 #include "std_msgs/msg/float32.hpp"
+#include <action_msgs/msg/goal_status_array.hpp>
 #include <geometry_msgs/msg/twist.hpp>
 
 #include <cmath>
@@ -54,6 +55,7 @@ private:
     rclcpp::Subscription<customed_interfaces::msg::Temp>::SharedPtr temp_response_subscriber;
     vector<rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr> robot_odom_subscribers_;
     vector<rclcpp::Subscription<nav_msgs::msg::Path>::SharedPtr> navigation_path_subscribers_;
+    vector<rclcpp::Subscription<action_msgs::msg::GoalStatusArray>::SharedPtr> navigation_status_subscribers_;
 
     //? publishers
     rclcpp::Publisher<customed_interfaces::msg::Object>::SharedPtr omniverse_publisher;
@@ -115,9 +117,13 @@ private:
     struct navigation_struct
     {
         string class_name;
+        string navigation_path_topic_name;
+        string navigation_status_topic_name;
+
         int id;
         nav_msgs::msg::Path path_msg;
         bool recalculate_transformation = false;
+        bool clear_path = false;
     };
 
     // std::unordered_map<std::string, topics_struct> odom_topics =
@@ -135,6 +141,7 @@ private:
 
     // Robot monitors
     std::map<std::string, std::shared_ptr<communication::RobotMonitor>> robot_monitors_; // [robot_name & id, robot_monitor_class]
+    std::set<std::string> handled_goals_;
 
     //? Methods
     // general usage methods
@@ -157,6 +164,8 @@ private:
     nav_msgs::msg::Odometry TransformationToPose(const Eigen::Matrix4d transformation_matrix);
     std::map<std::string, RobotConfig> loadRobotConfigs(const std::string &filename);
     bool isOdomReset(const std::string &topic_name, const builtin_interfaces::msg::Time &current_stamp);
+    std::string uuid_to_string(const std::array<uint8_t, 16> &uuid);
+    
 
     // callbacks
     void objectCallback(const customed_interfaces::msg::Object::SharedPtr msg);
@@ -165,8 +174,8 @@ private:
     void tempResponseCallback(const customed_interfaces::msg::Temp::SharedPtr temp_response_msg);
     void STODExtractionCallback(const customed_interfaces::msg::Object::SharedPtr object_msg);
     void robotOdomCallback(const std::string &topic_name, const nav_msgs::msg::Odometry::SharedPtr msg);
-    void navigationPathCallback(const std::string &topic_name, const nav_msgs::msg::Path::SharedPtr msg);
-
+    void navigationPathCallback(CommunicatorNode::navigation_struct & topicInfo, const nav_msgs::msg::Path::SharedPtr msg);
+    void navigationStatusCallback(CommunicatorNode::navigation_struct &nav_data, const action_msgs::msg::GoalStatusArray::SharedPtr msg);
     // services methods
     void publishHololensSTOD();
     void publishOmniverseSTOD();
