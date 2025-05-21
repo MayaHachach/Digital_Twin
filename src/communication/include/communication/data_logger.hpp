@@ -13,11 +13,21 @@
 #include <string>
 #include <filesystem>
 
+#include <thread>
+#include <queue>
+#include <mutex>
+#include <atomic>
+
 using namespace std;
 
 class DataLogger
 {
 private:
+    std::mutex log_mutex_;
+    std::queue<nlohmann::json> log_queue_;
+    std::atomic<bool> keep_logging_;
+    std::thread logging_thread_;
+
 public:
     std::string log_file_path_;
 
@@ -53,6 +63,10 @@ public:
     void logAllObjects(std::unordered_map<std::string, vector<DataLogger::object_map_struct>> &objectMap, std::map<std::string, std::shared_ptr<communication::RobotMonitor>> &robotMonitors);
     void logTempObjects(std::unordered_map<std::string, vector<customed_interfaces::msg::Object>> &Map);
     std::string removeIDFromName(const std::string &name, int id);
+
+    void startLoggingThread();
+    void stopLoggingThread();
+
 };
 
 #endif //__DATA__LOGGER__HPP__

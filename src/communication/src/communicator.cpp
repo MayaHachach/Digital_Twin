@@ -4,6 +4,7 @@
 
 CommunicatorNode::CommunicatorNode() : Node("communicator_node"), logger_("initial_history"), temp_logger("temp_history")
 {
+    logger_.startLoggingThread();
     threshold_ = 0.1; // Allow small floating-point differences
     object_map_ = logger_.loadLastIterationToMap();
     temp_map = temp_logger.loadLastTempToMap();
@@ -188,7 +189,7 @@ void CommunicatorNode::robotOdomCallback(const std::string &topic_name, const na
     object.message.pose = topicInfo.odom_msg.pose.pose;
 
     omniverse_publisher->publish(object.message);
-    // logger_.logAllObjects(object_map_, robot_monitors_);
+    logger_.logAllObjects(object_map_, robot_monitors_); 
 }
 
 void CommunicatorNode::navigationPathCallback(CommunicatorNode::navigation_struct &topicInfo, const nav_msgs::msg::Path::SharedPtr msg)
@@ -265,7 +266,7 @@ void CommunicatorNode::navigationPathCallback(CommunicatorNode::navigation_struc
 
     // save navigation path to the monitoring class
     robot_monitors_[robot]->setNavigationPath(transformed_path);
-    // logger_.logAllObjects(object_map_, robot_monitors_);
+    logger_.logAllObjects(object_map_, robot_monitors_);
 }
 
 void CommunicatorNode::navigationStatusCallback(CommunicatorNode::navigation_struct &nav_data, const action_msgs::msg::GoalStatusArray::SharedPtr msg)
@@ -1043,6 +1044,8 @@ CommunicatorNode::~CommunicatorNode()
     object_counts.clear();
     // status_topics.clear();
     robot_monitors_.clear();
+    logger_.stopLoggingThread();
+
 }
 
 int main(int argc, char *argv[])

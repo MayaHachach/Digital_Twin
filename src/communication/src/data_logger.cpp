@@ -90,7 +90,6 @@ void DataLogger::logData(const nlohmann::json &new_entry)
     }
 }
 
-
 void DataLogger::logAllObjects(std::unordered_map<std::string, vector<DataLogger::object_map_struct>> &objectMap)
 {
     // Generate a timestamp
@@ -187,7 +186,9 @@ void DataLogger::logAllObjects(std::unordered_map<std::string, vector<DataLogger
 
         // Log the data to the JSON file
     }
-    logData(json_entry);
+    //add data to the queue to be logged
+    std::lock_guard<std::mutex> lock(log_mutex_);
+    log_queue_.push(json_entry);
     RCLCPP_INFO(rclcpp::get_logger("Datalogger"), "Logged data for %zu objects", objectMap.size());
 }
 
@@ -412,4 +413,35 @@ std::string DataLogger::removeIDFromName(const std::string &name, int id)
     }
 
     return name; // Return original name if ID not found at the end
+}
+
+void DataLogger::startLoggingThread()
+{
+    keep_logging_ = true;
+    logging_thread_ = std::thread([this]()
+                                  {
+        while (keep_logging_) {
+            nlohmann::json entry;
+            {
+                std::unique_lock<std::mutex> lock(log_mutex_);
+                if (!log_queue_.empty()) {
+                    entry = log_queue_.front();
+                    log_queue_.pop();
+                } else {
+                    lock.unlock();
+                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                    continue;
+                }
+            }
+            this->logData(entry);
+        } });
+}
+
+void DataLogger::stopLoggingThread()
+{
+    keep_logging_ = false;
+    if (logging_thread_.joinable())
+    {
+        logging_thread_.join();
+    }
 }
