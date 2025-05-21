@@ -311,7 +311,33 @@ unordered_map<string, vector<DataLogger::object_map_struct>> DataLogger::loadLas
         }
 
         // Get the last entry
-        auto last_entry = *(log_data["Isaac sim data"].rbegin());
+        auto &data = log_data["Isaac sim data"];
+
+        // Find the maximum numeric key
+        int max_index = -1;
+        for (auto it = data.begin(); it != data.end(); ++it)
+        {
+            try
+            {
+                int index = std::stoi(it.key());
+                if (index > max_index)
+                {
+                    max_index = index;
+                }
+            }
+            catch (const std::exception &e)
+            {
+                RCLCPP_WARN(rclcpp::get_logger("Datalogger"), "Non-integer key in Isaac sim data: %s", it.key().c_str());
+            }
+        }
+
+        if (max_index == -1)
+        {
+            RCLCPP_ERROR(rclcpp::get_logger("Datalogger"), "Failed to find a valid numeric key in Isaac sim data.");
+            return object_map;
+        }
+
+        auto last_entry = data[std::to_string(max_index)];
 
         // Parse the objects into the map
         for (const auto &obj : last_entry["objects"])
@@ -367,7 +393,33 @@ unordered_map<string, vector<customed_interfaces::msg::Object>> DataLogger::load
         }
 
         // Get the last entry
-        auto last_entry = *(log_data["Isaac sim data"].rbegin());
+        auto &data = log_data["Isaac sim data"];
+
+        // Find the maximum numeric key
+        int max_index = -1;
+        for (auto it = data.begin(); it != data.end(); ++it)
+        {
+            try
+            {
+                int index = std::stoi(it.key());
+                if (index > max_index)
+                {
+                    max_index = index;
+                }
+            }
+            catch (const std::exception &e)
+            {
+                RCLCPP_WARN(rclcpp::get_logger("Datalogger"), "Non-integer key in Isaac sim data: %s", it.key().c_str());
+            }
+        }
+
+        if (max_index == -1)
+        {
+            RCLCPP_ERROR(rclcpp::get_logger("Datalogger"), "Failed to find a valid numeric key in Isaac sim data.");
+            return temp_map;
+        }
+
+        auto last_entry = data[std::to_string(max_index)];
 
         // Parse the objects into the map
         for (const auto &obj : last_entry["objects"])
