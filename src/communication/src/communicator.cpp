@@ -293,7 +293,6 @@ void CommunicatorNode::navigationStatusCallback(CommunicatorNode::navigation_str
             transformed_path.header.frame_id = robot;
             transformed_path.poses.clear();
             navigation_path_publisher->publish(transformed_path);
-            nav_data.clear_path = true;
         }
     }
 }
@@ -716,7 +715,6 @@ void CommunicatorNode::fillOdomTopics()
                     {
 
                         nav_data.navigation_status_topic_name = navigation_status_topic;
-                        nav_data.clear_path = false;
 
                         // navigation_topics[navigation_path_topic] = nav_data;
                         RCLCPP_INFO(this->get_logger(), "Loaded navigation status topic from config: %s -> (%s, %d)",
