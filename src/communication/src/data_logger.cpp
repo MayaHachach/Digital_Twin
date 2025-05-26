@@ -113,8 +113,9 @@ void DataLogger::logAllObjects(std::unordered_map<std::string, vector<DataLogger
                                              {"topic_name", obj.topic_name},
                                              {"pose",
                                               {{"position", {obj.message.pose.position.x, obj.message.pose.position.y, obj.message.pose.position.z}},
-                                               {"orientation", {obj.message.pose.orientation.w, obj.message.pose.orientation.x, obj.message.pose.orientation.y, obj.message.pose.orientation.z}}}},
-                                             {"scale", {obj.message.scale.x, obj.message.scale.y, obj.message.scale.z}}});
+                                               {"orientation", {obj.message.pose.orientation.w, obj.message.pose.orientation.x, obj.message.pose.orientation.y, obj.message.pose.orientation.z}}}
+                                            }
+                                            });
         }
     }
 
@@ -181,7 +182,7 @@ void DataLogger::logAllObjects(std::unordered_map<std::string, vector<DataLogger
                                                {"orientation", {obj.message.pose.orientation.w, obj.message.pose.orientation.x, obj.message.pose.orientation.y, obj.message.pose.orientation.z}}}},
                                              {"status", robot_status.empty() ? "No status available" : robot_status},
                                              {"navigation_path", robot_navigation_path.empty() ? "No navigation path available" : robot_navigation_path},
-                                             {"scale", {obj.message.scale.x, obj.message.scale.y, obj.message.scale.z}}});
+                                            });
         }
 
         // Log the data to the JSON file
