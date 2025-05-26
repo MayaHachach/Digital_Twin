@@ -31,16 +31,6 @@ private:
 public:
     std::string log_file_path_;
 
-    struct StatusUnion
-    {
-        std::string type; // e.g., "Husky", "Kobuki", or "None"
-
-        customed_interfaces::msg::HuskyStatus husky_status;
-        customed_interfaces::msg::KobukiStatus kobuki_status;
-
-        StatusUnion() : type("None") {}
-    };
-
     struct object_map_struct
     {
         string topic_name;

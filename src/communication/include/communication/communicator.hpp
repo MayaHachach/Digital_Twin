@@ -123,7 +123,6 @@ private:
         int id;
         nav_msgs::msg::Path path_msg;
         bool recalculate_transformation = false;
-        bool clear_path = false;
     };
 
     // std::unordered_map<std::string, topics_struct> odom_topics =
