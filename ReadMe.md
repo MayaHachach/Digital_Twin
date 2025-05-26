@@ -49,7 +49,8 @@ to communicate with hololens:
 
 Main functionalities and how to use them:
 
-2- Automatic update:
+2- Automatic update (online object handling):
+Update is done automatically from the odometry data that is being transformed to the global frame
 
 3- Offline object handling:
 
@@ -60,10 +61,13 @@ thus you need to run the request_STOD_server (exists in the launch file), and re
 Note: Human correction should only be applied on objects while in static state (cant be applied on objects while moving)
 
 5- Status Monitoting:
+Status like battery percentage, motor temperature, navigation path is being monitored.
 
-For adding a new robot type:
+6- Addition of Robot type:
+Since each robot type has its own way of publishing monitor data, the subscription is unique for every kind of robot. The system allows for the addition of any type of robot by following the steps below:
+.....to be continued
 
-6- Logging:
+7- Logging:
 
 The logging process is done automatically on each update in the digital twin. 
 The logged information include timestamp, all objects, each with their corresponding class name, id, pose, topic name, and status. 
@@ -71,13 +75,14 @@ The json file is saved in the share folder of the package, to access the json fi
 cd {path to workspace}/Digital_twin/install/communication/share/communication
 To request the history, you need to run the "request_history_server" node and run the request_history_client (exists in the launch file)
 
-7- Day to day update:
+8- Day to day update:
 If the system was turned off from day to day, upon omniverse initialization and system initialization, you need to send the recent object locations to omniverse, 
 for that you need to run the request_STOD_server (exists in the launch file), and request_STOD_client from omniverse.
 Note: the STOD is sent to omniverse only once per system run,
         if for any reason, you need to resend the STOD again to omniverse, rerun the ros system (ctrl + c)
 
-8- Launch file:
+
+9- Launch file:
 The launch file runs the following nodes:
 - communicator: communicates with omniverse and XR-agent at all times, manages updates and logs in the json file per update.
 - request_history_server: sends the json file to omniverse for replay.
