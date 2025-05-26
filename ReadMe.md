@@ -53,6 +53,7 @@ Main functionalities and how to use them:
 Update is done automatically from the odometry data that is being transformed to the global frame
 
 3- Offline object handling:
+for objets that arent connected to ROS like chairs, tables...etc.
 
 4- Human Correction:
 To start human correction, first, you need to send the current objects with their corresponding locations to the XR-Agent,
