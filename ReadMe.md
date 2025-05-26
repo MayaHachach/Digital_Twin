@@ -53,7 +53,7 @@ Main functionalities and how to use them:
 Update is done automatically from the odometry data that is being transformed to the global frame
 
 3- Offline object handling:
-for objets that arent connected to ROS like chairs, tables...etc.
+for objets that arent connected to ROS like chairs, tables...etc. The system stores the extra objects visualized by the hololens and sends the XR-Agent the current locations of this type of object. The human agent by his turn confirms the presence or absence of the object in this location. If the object wasnt in place, then it is switched with one of the stored objects of the same type in a LIFO manner.
 
 4- Human Correction:
 To start human correction, first, you need to send the current objects with their corresponding locations to the XR-Agent,
