@@ -89,9 +89,6 @@ ament_target_dependencies(request_history_client rclcpp std_msgs nlohmann_json a
 add_executable(husky_manager src/husky_manager.cpp)
 ament_target_dependencies(husky_manager rclcpp geometry_msgs nav_msgs tf2 tf2_geometry_msgs customed_interfaces husky_msgs)
 
-add_executable(path_creator references/path.cpp)
-ament_target_dependencies(path_creator rclcpp geometry_msgs nav_msgs visualization_msgs)
-
 add_executable(setup_node src/setup.cpp)
 target_link_libraries(setup_node
   data_logger
@@ -115,7 +112,6 @@ install(TARGETS
   request_history_client
   husky_manager
   setup_node
-  path_creator
   DESTINATION lib/${PROJECT_NAME}
 )
 
