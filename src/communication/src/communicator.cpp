@@ -16,6 +16,10 @@ CommunicatorNode::CommunicatorNode() : Node("communicator_node"), logger_("initi
     InitializePublishers();
     InitializeSubscribers();
     InitializeServices();
+
+    hololens_connection_timer_ = this->create_wall_timer(
+        std::chrono::seconds(2),
+        std::bind(&CommunicatorNode::isHololensConnected, this));
 }
 
 // Subscription Callbacks
@@ -189,7 +193,7 @@ void CommunicatorNode::robotOdomCallback(const std::string &topic_name, const na
     object.message.pose = topicInfo.odom_msg.pose.pose;
 
     omniverse_publisher->publish(object.message);
-    logger_.logAllObjects(object_map_, robot_monitors_); 
+    logger_.logAllObjects(object_map_, robot_monitors_);
 }
 
 void CommunicatorNode::navigationPathCallback(CommunicatorNode::navigation_struct &topicInfo, const nav_msgs::msg::Path::SharedPtr msg)
@@ -945,6 +949,36 @@ bool CommunicatorNode::isOdomReset(const std::string &topic_name, const builtin_
     return false;
 }
 
+void CommunicatorNode::isHololensConnected()
+{
+    size_t pub_count = hololens_object_subscriber->get_publisher_count();
+
+    if (pub_count > 0 && !hololens_connected)
+    {
+        hololens_connected = true;
+        RCLCPP_INFO(this->get_logger(), "✅ HoloLens connected.");
+    }
+    else if (pub_count == 0 && hololens_connected)
+    {
+        hololens_connected = false;
+        RCLCPP_WARN(this->get_logger(), "❌ HoloLens disconnected. Sending empty pose...");
+
+        customed_interfaces::msg::Object hololens_msg;
+        hololens_msg.name = "Hololens";
+        hololens_msg.id = 1;
+
+        hololens_msg.pose.position.x = std::numeric_limits<double>::quiet_NaN();
+        hololens_msg.pose.position.y = std::numeric_limits<double>::quiet_NaN();
+        hololens_msg.pose.position.z = std::numeric_limits<double>::quiet_NaN();
+        hololens_msg.pose.orientation.x = 0.0;
+        hololens_msg.pose.orientation.y = 0.0;
+        hololens_msg.pose.orientation.z = 0.0;
+        hololens_msg.pose.orientation.w = 1.0;
+
+        omniverse_publisher->publish(hololens_msg);
+    }
+}
+
 Eigen::Matrix4d CommunicatorNode::poseToTransformation(const geometry_msgs::msg::Pose &pose)
 {
     Eigen::Matrix4d T = Eigen::Matrix4d::Identity();
@@ -1043,7 +1077,6 @@ CommunicatorNode::~CommunicatorNode()
     // status_topics.clear();
     robot_monitors_.clear();
     logger_.stopLoggingThread();
-
 }
 
 int main(int argc, char *argv[])
@@ -1062,4 +1095,3 @@ int main(int argc, char *argv[])
     rclcpp::shutdown();
     return 0;
 }
-
