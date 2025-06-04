@@ -1,91 +1,178 @@
-Before building:
+# Digital Twin Communication Package
 
-install the Eigen3 and tf2 using the following commands:
+## Overview
+The Communication package is a ROS 2 package that serves as the backbone for the Digital Twin system, facilitating real-time communication between physical robots, the digital twin environment, and human operators through XR interfaces. It provides robust services for object tracking, state management, and historical data logging.
+
+## Prerequisites
+
+### Required Dependencies
+```bash
+# Install Eigen3
 sudo apt install libeigen3-dev
+
+# Install tf2
 sudo apt install libtf2-dev
+```
 
-To make sure the above library were installed, you can check the folder: /usr/include
-on terminal: cd /usr/include 
-and then u can examine the folders and files
+Verify the installations by checking the `/usr/include` directory:
+```bash
+cd /usr/include
+# Verify eigen3 and tf2 directories exist
+```
 
------------------------------------------------------------------------------------------
+## Installation and Setup
 
-Day 0 Extraction:
+1. **Day 0 Information Setup**
+   - If you don't have Day 0 information:
+     ```bash
+     ros2 run communication day0_creation
+     ```
+   - If you have Day 0 information, create a publisher for this information
 
-Before running anything, it is required to extract the day 0 information that we will be working on.
+2. **Initial Configuration**
+   ```bash
+   # Run the setup node
+   ros2 run communication setup_node
+   ```
+   - A configuration file will be auto-generated at `/Digital_Twin/src/communication/config/robots.yaml`
+   - Edit this file to specify:
+     - Odometry topic names
+     - Status topic names
+     - Note: Topics starting with "e.g." are ignored
 
+3. **Build and Source**
+   ```bash
+   # Build the workspace
+   colcon build
 
-If you dont have Day 0 information:
-- run the day0 creation standalone node using the following command:\
-ros2 run communication day0_creation
+   # Source the workspace
+   source install/setup.bash
+   ```
 
+## Running the System
 
-If you do have Day0 information, create a publisher that publishes these information and then go through the following steps:
+### Basic Launch
+```bash
+ros2 launch communication communication.launch.py
+```
 
-- Run the setup node using the following command: ros2 run communication setup_node
+### HoloLens Integration
+1. Get your IP address:
+   ```bash
+   hostname -I
+   ```
+2. Update the ROS-TCP-Endpoint configuration:
+   - Open `ROS-TCP-Endpoint-main-ros2/launch/endpoint.py`
+   - Set `ROS_IP` to your IP address
+3. Launch the endpoint:
+   ```bash
+   ros2 launch ros_tcp_endpoint endpoint.py
+   ```
 
-- A config file for robots is auto-generated inside the config file in /Digital_Twin/src/communication/config/robots.yaml
-It is important to edit this config file and fill the odometry topic name and the status topic names with their titles.
-Note: every topic name that starts with e.g. is not taken into consideration.
+## Core Functionalities
 
-- build the workspace using colcon build command
+### 1. Automatic Update (Online Object Handling)
+- Real-time tracking of objects through odometry data
+- Automatic transformation to global frame
+- Continuous state updates in the digital twin
 
-- source the workspace using the source install/setup.bash command
+### 2. Offline Object Handling
+- Manages static objects (chairs, tables, etc.)
+- Supports HoloLens visualization
+- Implements LIFO (Last In, First Out) object replacement
+- Human verification system for object presence
 
------------------------------------------------------------------------------------------
+### 3. Human Correction System
+- Requires static object state
+- Integration with XR-Agent for verification
+- Process:
+  1. Run `request_STOD_server` (included in launch file)
+  2. Run `request_STOD_client` from XR-Agent
 
-How to run the digital twin update system:
+### 4. Status Monitoring
+- Battery percentage tracking
+- Motor temperature monitoring
+- Navigation path visualization
+- Real-time status updates
 
-After having the day0 information:
-- run the launch file: ros2 launch communication communication.launch.py
+### 5. Robot Type Integration
+- Extensible system for different robot types
+- Custom subscription handling per robot type
+- Configurable monitoring parameters
 
-to communicate with hololens:
-- run in your terminal: hostname -I and copy the ip address
-- open ROS-TCP-Endpoint-main-ros2/launch/endpoint.py
-- change the 'ROS_IP' default value to the copied value.
-- run the launch file using: ros2 launch ros_tcp_endpoint endpoint.py
+### 6. Logging System
+- Automatic logging on each digital twin update
+- Logged information includes:
+  - Timestamp
+  - Object details (class name, ID, pose)
+  - Topic names
+  - Status information
+- Log location: `{workspace}/Digital_twin/install/communication/share/communication`
+- Access logs using:
+  ```bash
+  # Run history server
+  ros2 run communication request_history_server
+  # Run history client (included in launch file)
+  ```
 
------------------------------------------------------------------------------------------
+### 7. Day-to-Day Updates
+- System initialization handling
+- Omniverse synchronization
+- Process:
+  1. Run `request_STOD_server`
+  2. Run `request_STOD_client` from Omniverse
+- Note: STOD is sent to Omniverse once per system run
+- To resend STOD, restart the ROS system (Ctrl+C)
 
-Main functionalities and how to use them:
+## Launch File Components
 
-2- Automatic update (online object handling):
-Update is done automatically from the odometry data that is being transformed to the global frame
+The main launch file (`communication.launch.py`) initializes:
+- `communicator_node`: Core communication with Omniverse and XR-agent
+- `request_history_server`: JSON file management for replay
+- `request_STOD_server`: Object location management
 
-3- Offline object handling:
-for objets that arent connected to ROS like chairs, tables...etc. The system stores the extra objects visualized by the hololens and sends the XR-Agent the current locations of this type of object. The human agent by his turn confirms the presence or absence of the object in this location. If the object wasnt in place, then it is switched with one of the stored objects of the same type in a LIFO manner.
+## Available Services
 
-4- Human Correction:
-To start human correction, first, you need to send the current objects with their corresponding locations to the XR-Agent,
-thus you need to run the request_STOD_server (exists in the launch file), and request_STOD_client from the XR-Agent.
+### 1. STOD (State of Digital Twin) Service
+- **Service Name**: `/request_STOD`
+- **Purpose**: Retrieves current state of all objects in the digital twin
+- **Usage**:
+  ```bash
+  # Server (included in launch file)
+  ros2 run communication request_STOD_server
+  
+  # Client (from XR-Agent or Omniverse)
+  ros2 run communication request_STOD_client
+  ```
 
-Note: Human correction should only be applied on objects while in static state (cant be applied on objects while moving)
+### 2. History Service
+- **Service Name**: `/request_history`
+- **Purpose**: Retrieves historical data of the digital twin
+- **Usage**:
+  ```bash
+  # Server
+  ros2 run communication request_history_server
+  
+  # Client (included in launch file)
+  ros2 run communication request_history_client
+  ```
 
-5- Status Monitoting:
-Status like battery percentage, motor temperature, navigation path is being monitored.
+## Troubleshooting
 
-6- Addition of Robot type:
-Since each robot type has its own way of publishing monitor data, the subscription is unique for every kind of robot. The system allows for the addition of any type of robot by following the steps below:
-.....to be continued
+### Common Issues
+1. **Missing Dependencies**
+   - Ensure Eigen3 and tf2 are properly installed
+   - Verify installations in `/usr/include`
 
-7- Logging:
+2. **Configuration Issues**
+   - Check `robots.yaml` for correct topic names
+   - Ensure no topics start with "e.g."
 
-The logging process is done automatically on each update in the digital twin. 
-The logged information include timestamp, all objects, each with their corresponding class name, id, pose, topic name, and status. 
-The json file is saved in the share folder of the package, to access the json file, go to:
-cd {path to workspace}/Digital_twin/install/communication/share/communication
-To request the history, you need to run the "request_history_server" node and run the request_history_client (exists in the launch file)
+3. **HoloLens Connection**
+   - Verify IP address configuration
+   - Check network connectivity
+   - Ensure ROS-TCP-Endpoint is running
 
-8- Day to day update:
-If the system was turned off from day to day, upon omniverse initialization and system initialization, you need to send the recent object locations to omniverse, 
-for that you need to run the request_STOD_server (exists in the launch file), and request_STOD_client from omniverse.
-Note: the STOD is sent to omniverse only once per system run,
-        if for any reason, you need to resend the STOD again to omniverse, rerun the ros system (ctrl + c)
-
-
-9- Launch file:
-The launch file runs the following nodes:
-- communicator: communicates with omniverse and XR-agent at all times, manages updates and logs in the json file per update.
-- request_history_server: sends the json file to omniverse for replay.
-- request_STOD_server: send the most recent object locations for omniverse upon initialization and for the XR-Agent upon request.
-
+4. **STOD Service**
+   - If STOD needs to be resent, restart the ROS system
+   - Ensure objects are in static state for human correction
