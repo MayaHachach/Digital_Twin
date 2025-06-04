@@ -95,6 +95,9 @@ private:
         prevStodReceived{false};
     std::unordered_map<std::string, int> object_counts;
 
+    rclcpp::TimerBase::SharedPtr hololens_connection_timer_;
+    bool hololens_connected{false};
+
     struct status_struct
     {
         string class_name;
@@ -155,6 +158,7 @@ private:
     bool isMessageEqual(const customed_interfaces::msg::Temp &msg1, const customed_interfaces::msg::Temp &msg2);
     bool isPoseEqual(const geometry_msgs::msg::Pose &msg1, const geometry_msgs::msg::Pose &msg2);
     bool isObjectInSTOD(const std::string &object_class_name, int object_id = 0);
+    void isHololensConnected();
     void processRobotsNode(const YAML::Node &robots, std::map<std::string, RobotConfig> &configs);
     void publishRobotStatus();
     DataLogger::object_map_struct AddNewObject(const customed_interfaces::msg::Object &message);
@@ -164,7 +168,6 @@ private:
     std::map<std::string, RobotConfig> loadRobotConfigs(const std::string &filename);
     bool isOdomReset(const std::string &topic_name, const builtin_interfaces::msg::Time &current_stamp);
     std::string uuid_to_string(const std::array<uint8_t, 16> &uuid);
-    
 
     // callbacks
     void objectCallback(const customed_interfaces::msg::Object::SharedPtr msg);
@@ -173,7 +176,7 @@ private:
     void tempResponseCallback(const customed_interfaces::msg::Temp::SharedPtr temp_response_msg);
     void STODExtractionCallback(const customed_interfaces::msg::Object::SharedPtr object_msg);
     void robotOdomCallback(const std::string &topic_name, const nav_msgs::msg::Odometry::SharedPtr msg);
-    void navigationPathCallback(CommunicatorNode::navigation_struct & topicInfo, const nav_msgs::msg::Path::SharedPtr msg);
+    void navigationPathCallback(CommunicatorNode::navigation_struct &topicInfo, const nav_msgs::msg::Path::SharedPtr msg);
     void navigationStatusCallback(CommunicatorNode::navigation_struct &nav_data, const action_msgs::msg::GoalStatusArray::SharedPtr msg);
     // services methods
     void publishHololensSTOD();

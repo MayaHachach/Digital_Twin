@@ -4,10 +4,8 @@ DataLogger::DataLogger(const std::string &user_file_name)
 {
     // Resolve the path to the JSON file
     auto source_path = std::filesystem::path(__FILE__);
-    RCLCPP_INFO(rclcpp::get_logger("DataLogger"), "source path: %s", source_path.c_str());
     auto workspace_src = source_path.parent_path().parent_path().parent_path(); // Gets you to .../src/communication
-    RCLCPP_INFO(rclcpp::get_logger("DataLogger"), "workspace path: %s", log_file_path_.c_str());
-    auto history_dir = workspace_src / "communication" / "history"; // .../src/communication/history
+    auto history_dir = workspace_src / "communication" / "history";             // .../src/communication/history
     log_file_path_ = (history_dir / (user_file_name + ".json")).string();
 
     RCLCPP_INFO(rclcpp::get_logger("DataLogger"), "log path: %s", log_file_path_.c_str());
@@ -20,7 +18,8 @@ DataLogger::DataLogger(const std::string &user_file_name)
 void DataLogger::initializeJsonFile()
 {
     std::ifstream file(log_file_path_); // Uses std::ifstream to attempt opening the file at log_file_path_.
-    if (!file.good())                   // The good() method checks if the file exists and is accessible. In this if, the file doesn't exist
+
+    if (!file.good()) // The good() method checks if the file exists and is accessible. In this if, the file doesn't exist
     {
         // File does not exist; create it
         nlohmann::json initial_data;
@@ -113,9 +112,7 @@ void DataLogger::logAllObjects(std::unordered_map<std::string, vector<DataLogger
                                              {"topic_name", obj.topic_name},
                                              {"pose",
                                               {{"position", {obj.message.pose.position.x, obj.message.pose.position.y, obj.message.pose.position.z}},
-                                               {"orientation", {obj.message.pose.orientation.w, obj.message.pose.orientation.x, obj.message.pose.orientation.y, obj.message.pose.orientation.z}}}
-                                            }
-                                            });
+                                               {"orientation", {obj.message.pose.orientation.w, obj.message.pose.orientation.x, obj.message.pose.orientation.y, obj.message.pose.orientation.z}}}}});
         }
     }
 
@@ -174,20 +171,21 @@ void DataLogger::logAllObjects(std::unordered_map<std::string, vector<DataLogger
             {
                 RCLCPP_WARN(rclcpp::get_logger("Datalogger"), "No robot monitor found for %s", robot_name.c_str());
             }
-            json_entry["objects"].push_back({{"name", obj.message.name + std::to_string(obj.message.id)},
-                                             {"id", obj.message.id},
-                                             {"topic_name", obj.topic_name},
-                                             {"pose",
-                                              {{"position", {obj.message.pose.position.x, obj.message.pose.position.y, obj.message.pose.position.z}},
-                                               {"orientation", {obj.message.pose.orientation.w, obj.message.pose.orientation.x, obj.message.pose.orientation.y, obj.message.pose.orientation.z}}}},
-                                             {"status", robot_status.empty() ? "No status available" : robot_status},
-                                             {"navigation_path", robot_navigation_path.empty() ? "No navigation path available" : robot_navigation_path},
-                                            });
+            json_entry["objects"].push_back({
+                {"name", obj.message.name + std::to_string(obj.message.id)},
+                {"id", obj.message.id},
+                {"topic_name", obj.topic_name},
+                {"pose",
+                 {{"position", {obj.message.pose.position.x, obj.message.pose.position.y, obj.message.pose.position.z}},
+                  {"orientation", {obj.message.pose.orientation.w, obj.message.pose.orientation.x, obj.message.pose.orientation.y, obj.message.pose.orientation.z}}}},
+                {"status", robot_status.empty() ? "No status available" : robot_status},
+                {"navigation_path", robot_navigation_path.empty() ? "No navigation path available" : robot_navigation_path},
+            });
         }
 
         // Log the data to the JSON file
     }
-    //add data to the queue to be logged
+    // add data to the queue to be logged
     std::lock_guard<std::mutex> lock(log_mutex_);
     log_queue_.push(json_entry);
     RCLCPP_INFO(rclcpp::get_logger("Datalogger"), "Logged data for %zu objects", objectMap.size());
@@ -306,6 +304,7 @@ unordered_map<string, vector<DataLogger::object_map_struct>> DataLogger::loadLas
 
         // Check if the JSON file is empty or malformed
         if (log_data["Isaac sim data"].empty())
+        // if (!log_data.contains("Isaac sim data") || log_data["Isaac sim data"].empty())
         {
             RCLCPP_INFO(rclcpp::get_logger("Datalogger"), "JSON file is empty. Starting with an empty map.");
             return object_map;
@@ -345,7 +344,6 @@ unordered_map<string, vector<DataLogger::object_map_struct>> DataLogger::loadLas
         {
             object_map_struct object_msg;
             object_msg.message.id = obj["id"];
-            // object_msg.message.name = obj["name"];
             object_msg.message.name = removeIDFromName(obj["name"], object_msg.message.id);
             object_msg.topic_name = obj["topic_name"];
             object_msg.message.pose.position.x = obj["pose"]["position"][0];
@@ -355,9 +353,6 @@ unordered_map<string, vector<DataLogger::object_map_struct>> DataLogger::loadLas
             object_msg.message.pose.orientation.x = obj["pose"]["orientation"][1];
             object_msg.message.pose.orientation.y = obj["pose"]["orientation"][2];
             object_msg.message.pose.orientation.z = obj["pose"]["orientation"][3];
-            object_msg.message.scale.x = obj["scale"][0];
-            object_msg.message.scale.y = obj["scale"][1];
-            object_msg.message.scale.z = obj["scale"][2];
 
             object_map[object_msg.message.name].push_back(object_msg);
         }
@@ -436,9 +431,6 @@ unordered_map<string, vector<customed_interfaces::msg::Object>> DataLogger::load
             temp_msg.pose.orientation.x = obj["pose"]["orientation"][1];
             temp_msg.pose.orientation.y = obj["pose"]["orientation"][2];
             temp_msg.pose.orientation.z = obj["pose"]["orientation"][3];
-            temp_msg.scale.x = obj["scale"][0];
-            temp_msg.scale.y = obj["scale"][1];
-            temp_msg.scale.z = obj["scale"][2];
 
             temp_map[temp_msg.name].push_back(temp_msg);
         }
