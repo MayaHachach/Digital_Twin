@@ -434,6 +434,167 @@ void CommunicatorNode::handleRequest(const std::shared_ptr<customed_interfaces::
         response_->success = false;
     }
 }
+
+bool CommunicatorNode::publishSTODCategory(const std::string &category)
+{
+    auto it = object_map_.find(category);
+    if (it == object_map_.end() || it->second.empty())
+    {
+        RCLCPP_WARN(this->get_logger(), "Requested category '%s' not found in STOD!", category.c_str());
+        return false;
+    }
+
+    RCLCPP_INFO(this->get_logger(), "Publishing requested category '%s' to /hololensSTOD...", category.c_str());
+
+    for (const auto &obj : it->second)
+    {
+        STOD_hololens_publisher->publish(obj.message);
+        std::this_thread::sleep_for(std::chrono::milliseconds(10)); // small delay
+    }
+    return true;
+}
+
+void CommunicatorNode::handleRequestCategory(const std::shared_ptr<customed_interfaces::srv::RequestCategory::Request> request,
+                                             std::shared_ptr<customed_interfaces::srv::RequestCategory::Response> response)
+{
+    std::lock_guard<std::mutex> lock(request_mutex_);
+
+    std::string category = request->category;
+
+    // ✅ Check if category exists in the map
+    bool publish_result = publishSTODCategory(category);
+
+    response->success = publish_result;
+}
+
+void CommunicatorNode::handleEditObjectRequest(const std::shared_ptr<customed_interfaces::srv::EditObjects::Request> request,
+                                               std::shared_ptr<customed_interfaces::srv::EditObjects::Response> response)
+{
+    std::lock_guard<std::mutex> lock(request_mutex_);
+
+    auto &message = request->object; // Object msg from request
+
+    if (request->function == "add")
+    {
+        RCLCPP_INFO(this->get_logger(), "Adding object: %s", request->object.name.c_str());
+
+        if (message.id > 0 && isObjectInSTOD(message.name, message.id))
+        {
+            RCLCPP_ERROR(this->get_logger(),
+                         "❌ Cannot add %s %d, an object with this ID already exists!",
+                         message.name.c_str(), message.id);
+
+            response->success = false;
+            response->message = "Object already exists in STOD";
+            return;
+        }
+
+        // ✅ If offline (id == 0), assign next sequential ID
+        auto new_message = message;
+        if (message.id == 0)
+        {
+            new_message.id = object_map_[message.name].size() + 1;
+            RCLCPP_WARN(this->get_logger(),
+                        "Offline object detected. Auto-assigned ID: %d",
+                        new_message.id);
+        }
+
+        // ✅ Add new object safely
+        AddNewObject(new_message);
+
+        bool publish_result = publishSTODCategory(new_message.name);
+        if (!publish_result)
+        {
+            RCLCPP_ERROR(this->get_logger(), "❌ Failed to publish new object category: %s", new_message.name.c_str());
+            response->success = false;
+            response->message = "Failed to publish new object category";
+            return;
+        }
+        RCLCPP_INFO(this->get_logger(), "✅ Successfully added new object: %s %d",
+                    new_message.name.c_str(), new_message.id);
+
+        response->success = true;
+        response->message = "Object added successfully";
+        total_object_count += 1; // Increase total object count
+        RCLCPP_INFO(this->get_logger(), "Total object count is now %d", total_object_count);
+        logger_.setTotalObjectCount(total_object_count);  // Only when total changes
+        logger_.logAllObjects(object_map_, robot_monitors_);
+    }
+    else if (request->function == "delete")
+    {
+        RCLCPP_INFO(this->get_logger(), "Deleting object: %s", request->object.name.c_str());
+
+        auto &object_vector = object_map_[message.name];
+
+        auto it = std::find_if(object_vector.begin(), object_vector.end(),
+                               [&message](const DataLogger::object_map_struct &obj)
+                               {
+                                   return obj.message.id == message.id;
+                               });
+        int id = message.id;
+        customed_interfaces::msg::Object deleted_object;
+        if (it != object_vector.end())
+        {
+            // overwrite the object with the last one
+            if (it + 1 != object_vector.end())
+            {
+                deleted_object = object_vector.back().message; // save the last object
+                RCLCPP_INFO(this->get_logger(), "Overwriting object %s %d with the last one in the vector", it->message.name.c_str(), it->message.id);
+                *it = object_vector.back(); // copy the last element to the current position
+                it->message.id = id;        // keep the ID of the deleted object
+                object_vector.pop_back();   // remove the last element
+                omniverse_publisher->publish(it->message); // publish the updated object
+                deleted_object.name = "-" + deleted_object.name; // mark the object as deleted
+                omniverse_publisher->publish(deleted_object); // publish the deleted object
+            }
+            else
+            {
+                RCLCPP_INFO(this->get_logger(), "Removing the last object %s %d", it->message.name.c_str(), it->message.id);
+                // If it's the last element
+                // Just remove it, no need to overwrite
+                object_vector.pop_back();
+                it->message.name = "-" + it->message.name; // mark the object as deleted
+                omniverse_publisher->publish(it->message); // publish the updated object
+            }
+
+            RCLCPP_INFO(this->get_logger(), "✅ Successfully deleted object: %s %d",
+                        message.name.c_str(), message.id);
+
+            total_object_count -= 1;               // Decrease total object count
+            RCLCPP_INFO(this->get_logger(), "Total object count is now %d", total_object_count);
+            logger_.setTotalObjectCount(total_object_count);  // Only when total changes
+
+            // Log and publish
+            logger_.logAllObjects(object_map_, robot_monitors_);
+            bool publish_result = publishSTODCategory(message.name);
+
+            if (!publish_result)
+            {
+                RCLCPP_ERROR(this->get_logger(), "❌ Failed to publish updated object category: %s", message.name.c_str());
+                response->success = false;
+                response->message = "Failed to publish updated object category";
+                return;
+            }
+            response->success = true;
+            response->message = "Object deleted successfully";
+        }
+        else
+        {
+            RCLCPP_ERROR(this->get_logger(), "❌ Failed to delete object: %s %d, not found",
+                         message.name.c_str(), message.id);
+            response->success = false;
+            response->message = "Object not found in STOD";
+            return;
+        }
+    }
+    else
+    {
+        RCLCPP_ERROR(this->get_logger(), "Unknown function: %s", request->function.c_str());
+        response->success = false;
+        response->message = "Unknown function";
+        return;
+    }
+}
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Methods
@@ -504,6 +665,14 @@ void CommunicatorNode::InitializeServices()
     STOD_service = this->create_service<customed_interfaces::srv::RequestSTOD>(
         "request_STOD",
         std::bind(&CommunicatorNode::handleRequest, this, std::placeholders::_1, std::placeholders::_2));
+
+    request_category_service_ = this->create_service<customed_interfaces::srv::RequestCategory>(
+        "request_category",
+        std::bind(&CommunicatorNode::handleRequestCategory, this, std::placeholders::_1, std::placeholders::_2));
+
+    edit_object_service_ = this->create_service<customed_interfaces::srv::EditObjects>(
+        "edit_objects",
+        std::bind(&CommunicatorNode::handleEditObjectRequest, this, std::placeholders::_1, std::placeholders::_2));
 }
 
 std::string CommunicatorNode::uuid_to_string(const std::array<uint8_t, 16> &uuid)
@@ -631,9 +800,13 @@ void CommunicatorNode::fillObjectCounts()
 
     for (auto &pair : object_map_)
     {
+        int count = pair.second.size();
         object_counts[pair.first] = pair.second.size();
+        total_object_count += count;
         RCLCPP_INFO(this->get_logger(), "Object count of class %s is %d", pair.first.c_str(), object_counts[pair.first]);
     }
+    // object_counts["total"] = total_object_count;
+    RCLCPP_INFO(this->get_logger(), "Total object count is %d", total_object_count);
 }
 
 void CommunicatorNode::fillOdomTopics()
@@ -786,6 +959,12 @@ DataLogger::object_map_struct CommunicatorNode::AddNewObject(const customed_inte
     DataLogger::object_map_struct new_object;
     new_object.message = message;
 
+    if (message.id == 0)
+    {
+        // If id is 0, assign a new id based on the current size of the object_map_[message.name]
+        new_object.message.id = object_map_[message.name].size() + 1;
+    }
+
     for (auto &[topic_name, topic_struct] : odom_topics)
     {
         if (topic_struct.class_name == new_object.message.name && topic_struct.id == new_object.message.id)
@@ -803,7 +982,7 @@ DataLogger::object_map_struct CommunicatorNode::AddNewObject(const customed_inte
     RCLCPP_INFO(this->get_logger(), "Added new object: %s with id %d", message.name.c_str(), new_object.message.id);
     // Print the entire object_map_
     PrintSTOD();
-    // omniverse_publisher->publish(new_object.message);
+    omniverse_publisher->publish(new_object.message);
     return new_object;
 }
 

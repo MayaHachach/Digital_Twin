@@ -13,6 +13,8 @@
 #include "customed_interfaces/msg/object.hpp" // Replace with the correct message type header
 #include "customed_interfaces/msg/temp.hpp"
 #include "customed_interfaces/srv/request_stod.hpp"
+#include "customed_interfaces/srv/request_category.hpp"
+#include "customed_interfaces/srv/edit_objects.hpp"
 
 #include "communication/robot_monitor/robot_interface.hpp"
 #include "communication/robot_monitor/husky_robot.hpp"
@@ -25,6 +27,7 @@
 
 #include "std_msgs/msg/int32.hpp"
 #include "std_msgs/msg/float32.hpp"
+#include "std_msgs/msg/string.hpp"
 #include <action_msgs/msg/goal_status_array.hpp>
 #include <geometry_msgs/msg/twist.hpp>
 
@@ -72,6 +75,9 @@ private:
     rclcpp::Publisher<customed_interfaces::msg::Object>::SharedPtr STOD_hololens_publisher;
     rclcpp::Publisher<customed_interfaces::msg::Object>::SharedPtr STOD_omniverse_publisher;
     rclcpp::Service<customed_interfaces::srv::RequestSTOD>::SharedPtr STOD_service;
+    rclcpp::Service<customed_interfaces::srv::RequestCategory>::SharedPtr request_category_service_;
+    rclcpp::Service<customed_interfaces::srv::EditObjects>::SharedPtr edit_object_service_;
+
     std::mutex request_mutex_;
     bool request_processed_;
     int request_processed_counter = 0;
@@ -79,11 +85,20 @@ private:
     void handleRequest(const std::shared_ptr<customed_interfaces::srv::RequestSTOD::Request> request_,
                        std::shared_ptr<customed_interfaces::srv::RequestSTOD::Response> response_);
 
+    void handleRequestCategory(const std::shared_ptr<customed_interfaces::srv::RequestCategory::Request> request,
+                               std::shared_ptr<customed_interfaces::srv::RequestCategory::Response> response);
+
+    void handleEditObjectRequest(const std::shared_ptr<customed_interfaces::srv::EditObjects::Request> request,
+                                 std::shared_ptr<customed_interfaces::srv::EditObjects::Response> response);
+
+    bool publishSTODCategory(const std::string &category);
+
     //? variables
     rclcpp::TimerBase::SharedPtr timer_;
     customed_interfaces::msg::Object::SharedPtr last_message_;
     customed_interfaces::msg::Temp::SharedPtr previous_temp_message;
     customed_interfaces::msg::Object::SharedPtr message;
+    int total_object_count = 0; // Total number of objects in the STOD
 
     DataLogger logger_;
     DataLogger temp_logger;

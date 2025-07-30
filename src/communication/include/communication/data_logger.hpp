@@ -30,6 +30,7 @@ private:
 
 public:
     std::string log_file_path_;
+    int total_object_count_ = 0;
 
     struct object_map_struct
     {
@@ -57,6 +58,7 @@ public:
     void startLoggingThread();
     void stopLoggingThread();
 
+    void setTotalObjectCount(int count) { total_object_count_ = count; }
 };
 
 #endif //__DATA__LOGGER__HPP__
