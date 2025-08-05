@@ -25,15 +25,15 @@ CommunicatorNode::CommunicatorNode() : Node("communicator_node"), logger_("initi
 // Subscription Callbacks
 void CommunicatorNode::objectUpdate(const customed_interfaces::msg::Object::SharedPtr msg)
 {
-    // Check if the message is the same as the last one
-    if (last_message_ != nullptr && isMessageEqual(*msg, *last_message_))
-    {
-        RCLCPP_INFO(this->get_logger(), "duplicate message");
-        return;
-    }
+    // // Check if the message is the same as the last one
+    // if (last_message_ != nullptr && isMessageEqual(*msg, *last_message_))
+    // {
+    //     RCLCPP_INFO(this->get_logger(), "duplicate message");
+    //     return;
+    // }
 
-    message = last_message_ = msg; // Store the received message
-    RCLCPP_INFO(this->get_logger(), "new message is received");
+    // message = last_message_ = msg; // Store the received message
+    // RCLCPP_INFO(this->get_logger(), "new message is received");
 
     // check if object class if found in our object_map
     if (!isObjectInSTOD(message->name, message->id))
@@ -303,12 +303,12 @@ void CommunicatorNode::navigationStatusCallback(CommunicatorNode::navigation_str
 
 void CommunicatorNode::tempResponseCallback(const customed_interfaces::msg::Temp::SharedPtr temp_response_msg)
 {
-    if (previous_temp_message != nullptr && isMessageEqual(*temp_response_msg, *previous_temp_message))
-    {
-        RCLCPP_INFO(this->get_logger(), "duplicate temp message");
-        return;
-    }
-    previous_temp_message = temp_response_msg;
+    // if (previous_temp_message != nullptr && isMessageEqual(*temp_response_msg, *previous_temp_message))
+    // {
+    //     RCLCPP_INFO(this->get_logger(), "duplicate temp message");
+    //     return;
+    // }
+    // previous_temp_message = temp_response_msg;
 
     RCLCPP_INFO(this->get_logger(), "%s %d pose should be updated to [%.2f, %.2f, %.2f]",
                 temp_response_msg->name.c_str(), temp_response_msg->number, temp_map.at(temp_response_msg->name).back().pose.position.x, temp_map.at(temp_response_msg->name).back().pose.position.y, temp_map.at(temp_response_msg->name).back().pose.position.z);
