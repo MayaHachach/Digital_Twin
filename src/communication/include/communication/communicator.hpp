@@ -74,6 +74,7 @@ private:
     //? services
     rclcpp::Publisher<customed_interfaces::msg::Object>::SharedPtr STOD_hololens_publisher;
     rclcpp::Publisher<customed_interfaces::msg::Object>::SharedPtr STOD_omniverse_publisher;
+    rclcpp::Publisher<customed_interfaces::msg::Object>::SharedPtr category_hololens_publisher;
     rclcpp::Service<customed_interfaces::srv::RequestSTOD>::SharedPtr STOD_service;
     rclcpp::Service<customed_interfaces::srv::RequestCategory>::SharedPtr request_category_service_;
     rclcpp::Service<customed_interfaces::srv::EditObjects>::SharedPtr edit_object_service_;

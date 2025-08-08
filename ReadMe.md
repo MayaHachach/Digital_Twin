@@ -27,7 +27,7 @@ cd /usr/include
      ```bash
      ros2 run communication day0_creation
      ```
-   - If you have Day 0 information, create a publisher for this information
+   - If you have Day 0 information, skip this step and run the initial Configuration that subscribers to the day 0 information published by the visualizer on /initialSTOD topic
 
 2. **Initial Configuration**
    ```bash
@@ -83,19 +83,19 @@ ros2 launch communication communication.launch.py
 - Human verification system for object presence
 
 ### 3. Human Correction System
-- Requires static object state
+- Requires static object state at correcion time t.
 - Integration with XR-Agent for verification
 - Process:
-  1. Run `request_STOD_server` (included in launch file)
-  2. Run `request_STOD_client` from XR-Agent
+  - Initializes `request_STOD_server` (included in the launch file)
+  - XR Agent requests the STOD through `request_STOD_client`
 
 ### 4. Status Monitoring
 - Battery percentage tracking
 - Motor temperature monitoring
 - Navigation path visualization
-- Real-time status updates
+- Other Real-time status updates depending on each robot
 
-### 5. Robot Type Integration
+### 5. Robot Type Integration For Status Monitoring
 - Extensible system for different robot types
 - Custom subscription handling per robot type
 - Configurable monitoring parameters
@@ -107,12 +107,13 @@ ros2 launch communication communication.launch.py
   - Object details (class name, ID, pose)
   - Topic names
   - Status information
-- Log location: `{workspace}/Digital_twin/install/communication/share/communication`
-- Access logs using:
+- Log location: `{workspace_location}/Digital_twin/src/communication/history/initial_history.JSON`
+- Request logs using:
   ```bash
   # Run history server
-  ros2 run communication request_history_server
-  # Run history client (included in launch file)
+  ros2 run communication request_history_server (included in launch file)
+  # Run history client from the location you want to have your history log in using:
+
   ```
 
 ### 7. Day-to-Day Updates
@@ -173,6 +174,3 @@ The main launch file (`communication.launch.py`) initializes:
    - Check network connectivity
    - Ensure ROS-TCP-Endpoint is running
 
-4. **STOD Service**
-   - If STOD needs to be resent, restart the ROS system
-   - Ensure objects are in static state for human correction

@@ -448,7 +448,7 @@ bool CommunicatorNode::publishSTODCategory(const std::string &category)
 
     for (const auto &obj : it->second)
     {
-        STOD_hololens_publisher->publish(obj.message);
+        category_hololens_publisher->publish(obj.message);
         std::this_thread::sleep_for(std::chrono::milliseconds(10)); // small delay
     }
     return true;
@@ -603,6 +603,7 @@ void CommunicatorNode::InitializePublishers()
     omniverse_publisher = this->create_publisher<customed_interfaces::msg::Object>("/omniverseObject", 10);
     object_locations_publisher = this->create_publisher<customed_interfaces::msg::Object>("/objectLocations", 10);
     STOD_hololens_publisher = this->create_publisher<customed_interfaces::msg::Object>("/hololensSTOD", 10);
+    category_hololens_publisher = this->create_publisher<customed_interfaces::msg::Object>("/categorySTOD", 10);
     STOD_omniverse_publisher = this->create_publisher<customed_interfaces::msg::Object>("/omniverseSTOD", 10);
     temp_count_publisher = this->create_publisher<customed_interfaces::msg::Temp>("/tempCount", 10);
     navigation_path_publisher = this->create_publisher<nav_msgs::msg::Path>("/navigation_path", 10);
