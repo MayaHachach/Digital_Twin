@@ -91,6 +91,7 @@ void CommunicatorNode::objectUpdate(const customed_interfaces::msg::Object::Shar
 
     // if the object is an offline object, id = 0
     auto it = object_map_.find(message->name);
+    auto temp_it = temp_map.find(message->name);
 
     // check if the object is already in the map and in the same position
     for (auto &object : object_map_[message->name]) // go through the vector of structs
@@ -133,6 +134,21 @@ void CommunicatorNode::objectUpdate(const customed_interfaces::msg::Object::Shar
             RCLCPP_INFO(this->get_logger(), "  ID: %d, Position: [%.2f, %.2f, %.2f]",
                         obj.id, obj.pose.position.x, obj.pose.position.y, obj.pose.position.z);
         }
+    }
+
+    if (temp_it->second.size() == it->second.size() && !it->second.empty())
+    {
+        RCLCPP_INFO(this->get_logger(), "all %s are misplaced, auto correcting...", message->name.c_str());
+        for (int i = 0; i < it->second.size(); ++i)
+        {
+            it->second[i].message.pose = temp_it->second[i].pose; // Copy pose from temp
+            omniverse_publisher->publish(it->second[i].message);
+        }
+        logger_.logAllObjects(object_map_, robot_monitors_);
+        RCLCPP_INFO(this->get_logger(), "All %s objects have been corrected", message->name.c_str());
+        
+        // delete temp objects
+        temp_map.erase(temp_it);
     }
 
     // publish temp object counts
@@ -314,6 +330,7 @@ void CommunicatorNode::tempResponseCallback(const customed_interfaces::msg::Temp
                 temp_response_msg->name.c_str(), temp_response_msg->number, temp_map.at(temp_response_msg->name).back().pose.position.x, temp_map.at(temp_response_msg->name).back().pose.position.y, temp_map.at(temp_response_msg->name).back().pose.position.z);
 
     auto it = object_map_.find(temp_response_msg->name);
+    auto temp_it = temp_map.find(temp_response_msg->name);
 
     if (it == object_map_.end())
     {
@@ -375,6 +392,8 @@ void CommunicatorNode::tempResponseCallback(const customed_interfaces::msg::Temp
         }
     }
 }
+
+
 
 void CommunicatorNode::humanCorrectionCallback(const customed_interfaces::msg::Object::SharedPtr human_corrected_msg)
 {
