@@ -32,8 +32,8 @@ void CommunicatorNode::objectUpdate(const customed_interfaces::msg::Object::Shar
     //     return;
     // }
 
-    // message = last_message_ = msg; // Store the received message
-    // RCLCPP_INFO(this->get_logger(), "new message is received");
+    message = last_message_ = msg; // Store the received message
+    RCLCPP_INFO(this->get_logger(), "new message is received");
 
     // check if object class if found in our object_map
     if (!isObjectInSTOD(message->name, message->id))
@@ -501,8 +501,22 @@ void CommunicatorNode::handleEditObjectRequest(const std::shared_ptr<customed_in
 
         // ✅ Add new object safely
         AddNewObject(new_message);
+        object_counts[new_message.name] = object_map_[new_message.name].size();
+        RCLCPP_INFO(this->get_logger(), "object_counts[%s] = %d",
+                    new_message.name.c_str(), object_counts[new_message.name]);
 
         bool publish_result = publishSTODCategory(new_message.name);
+
+        if (temp_map.find(message.name) != temp_map.end() && !temp_map[message.name].empty())
+        {
+            RCLCPP_INFO(this->get_logger(), "Publishing objects to Hololens on /objectLocations for temp edit");
+
+            for (const auto &object : object_map_[new_message.name])
+            {
+                object_locations_publisher->publish(object.message);
+            }
+        }
+
         if (!publish_result)
         {
             RCLCPP_ERROR(this->get_logger(), "❌ Failed to publish new object category: %s", new_message.name.c_str());
@@ -516,8 +530,9 @@ void CommunicatorNode::handleEditObjectRequest(const std::shared_ptr<customed_in
         response->success = true;
         response->message = "Object added successfully";
         total_object_count += 1; // Increase total object count
+
         RCLCPP_INFO(this->get_logger(), "Total object count is now %d", total_object_count);
-        logger_.setTotalObjectCount(total_object_count);  // Only when total changes
+        logger_.setTotalObjectCount(total_object_count); // Only when total changes
         logger_.logAllObjects(object_map_, robot_monitors_);
     }
     else if (request->function == "delete")
@@ -540,12 +555,12 @@ void CommunicatorNode::handleEditObjectRequest(const std::shared_ptr<customed_in
             {
                 deleted_object = object_vector.back().message; // save the last object
                 RCLCPP_INFO(this->get_logger(), "Overwriting object %s %d with the last one in the vector", it->message.name.c_str(), it->message.id);
-                *it = object_vector.back(); // copy the last element to the current position
-                it->message.id = id;        // keep the ID of the deleted object
-                object_vector.pop_back();   // remove the last element
-                omniverse_publisher->publish(it->message); // publish the updated object
+                *it = object_vector.back();                      // copy the last element to the current position
+                it->message.id = id;                             // keep the ID of the deleted object
+                object_vector.pop_back();                        // remove the last element
+                omniverse_publisher->publish(it->message);       // publish the updated object
                 deleted_object.name = "-" + deleted_object.name; // mark the object as deleted
-                omniverse_publisher->publish(deleted_object); // publish the deleted object
+                omniverse_publisher->publish(deleted_object);    // publish the deleted object
             }
             else
             {
@@ -560,13 +575,25 @@ void CommunicatorNode::handleEditObjectRequest(const std::shared_ptr<customed_in
             RCLCPP_INFO(this->get_logger(), "✅ Successfully deleted object: %s %d",
                         message.name.c_str(), message.id);
 
-            total_object_count -= 1;               // Decrease total object count
+            total_object_count -= 1; // Decrease total object count
             RCLCPP_INFO(this->get_logger(), "Total object count is now %d", total_object_count);
-            logger_.setTotalObjectCount(total_object_count);  // Only when total changes
-
+            logger_.setTotalObjectCount(total_object_count); // Only when total changes
+            // Update object counts
+            object_counts[message.name] = object_vector.size();
+            RCLCPP_INFO(this->get_logger(), "object_counts[%s] = %d",
+                        message.name.c_str(), object_counts[message.name]);
             // Log and publish
             logger_.logAllObjects(object_map_, robot_monitors_);
             bool publish_result = publishSTODCategory(message.name);
+
+            if (temp_map.find(message.name) != temp_map.end() && !temp_map[message.name].empty())
+            {
+                RCLCPP_INFO(this->get_logger(), "Publishing objects to Hololens on /objectLocations for temp edit");
+                for (const auto &object : object_map_[message.name])
+                {
+                    object_locations_publisher->publish(object.message);
+                }
+            }
 
             if (!publish_result)
             {
