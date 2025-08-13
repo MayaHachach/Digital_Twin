@@ -65,6 +65,25 @@ namespace communication
             //     RCLCPP_INFO(this->node_->get_logger(), "Created Kobuki navigation path subscriber for topic: %s",
             //                 navigation_path_it->second.c_str());
             // }
+
+            auto joint_states_it = topics.find("joint_states");
+            if (joint_states_it != topics.end())
+            {
+                RCLCPP_WARN(this->node_->get_logger(), "Joint states topic found: %s", joint_states_it->second.c_str());
+                joint_states_subscriber_ = this->node_->create_subscription<sensor_msgs::msg::JointState>(
+                    joint_states_it->second, qos_profile,
+                    [this](const sensor_msgs::msg::JointState::SharedPtr msg)
+                    {
+                        // Handle joint states if needed
+                        RCLCPP_INFO(this->node_->get_logger(), "Received joint states for Kobuki robot %s", robot_id_.c_str());
+                        status_.joint_states_data = *msg;
+                        RCLCPP_INFO(this->node_->get_logger(),
+                                     "Joint states: %s", msg->name.size() > 0 ? msg->name[0].c_str() : "No joints");
+
+                        // Fill the custom message with the status data
+                        fillPublisherMsg();
+                    });
+            }
         }
         catch (const std::exception &e)
         {
@@ -146,7 +165,7 @@ namespace communication
         robot_status_.velocity_left = status_.data["left_wheel_velocity"];
         robot_status_.velocity_right = status_.data["right_wheel_velocity"];
         // robot_status_.path = status_.navigation_path_data;
-
+        robot_status_.joint_states = status_.joint_states_data;
         // Publish the custom message
         status_publisher_->publish(robot_status_);
         // RCLCPP_INFO(this->node_->get_logger(),

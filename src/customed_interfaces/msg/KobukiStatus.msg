@@ -21,3 +21,6 @@ float32 percentage       # Charge percentage on 0 to 1 range  (If unmeasured NaN
 
 #navigation_path
 nav_msgs/Path path 
+
+#joint_states
+sensor_msgs/JointState joint_states

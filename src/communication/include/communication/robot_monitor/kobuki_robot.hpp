@@ -8,6 +8,7 @@
 #include <irobot_create_msgs/msg/wheel_vels.hpp>
 #include <nav_msgs/msg/path.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/joint_state.hpp>
 
 namespace communication
 {
@@ -37,6 +38,7 @@ namespace communication
         rclcpp::Subscription<sensor_msgs::msg::BatteryState>::SharedPtr battery_subscriber_;
         rclcpp::Subscription<irobot_create_msgs::msg::WheelStatus>::SharedPtr wheel_status_subscriber_;
         rclcpp::Subscription<irobot_create_msgs::msg::WheelVels>::SharedPtr wheel_vels_subscriber_;
+        rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_states_subscriber_;
         rclcpp::Publisher<customed_interfaces::msg::KobukiStatus>::SharedPtr status_publisher_;
         rclcpp::Subscription<nav_msgs::msg::Path>::SharedPtr navigation_path_subscriber_;
         

@@ -3,6 +3,7 @@
 
 #include <rclcpp/rclcpp.hpp>
 #include <nav_msgs/msg/path.hpp>
+#include <sensor_msgs/msg/joint_state.hpp>
 #include <string>
 #include <memory>
 
@@ -14,6 +15,7 @@ namespace communication
         std::string robot_type;
         std::map<std::string, double> data; // For any extra data specific to robot type
         nav_msgs::msg::Path navigation_path_data;
+        sensor_msgs::msg::JointState joint_states_data;
 
         // default constructor
         RobotStatus(){}
