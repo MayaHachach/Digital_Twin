@@ -166,6 +166,21 @@ void DataLogger::logAllObjects(std::unordered_map<std::string, vector<DataLogger
                     robot_navigation_path["poses"].push_back({{"position", {pose_stamped.pose.position.x, pose_stamped.pose.position.y, pose_stamped.pose.position.z}},
                                                               {"orientation", {pose_stamped.pose.orientation.w, pose_stamped.pose.orientation.x, pose_stamped.pose.orientation.y, pose_stamped.pose.orientation.z}}});
                 }
+                
+                const auto &joint_states = robot_monitor->getStatus().joint_states_data;
+                if (!joint_states.name.empty())
+                {
+                    nlohmann::json joint_states_json;
+                    for (size_t i = 0; i < joint_states.name.size(); ++i)
+                    {
+                        joint_states_json["name"].push_back(joint_states.name[i]);
+                        joint_states_json["position"].push_back(joint_states.position[i]);
+                        joint_states_json["velocity"].push_back(joint_states.velocity[i]);
+                        joint_states_json["effort"].push_back(joint_states.effort[i]);
+                    }
+                    robot_status["joint_states"] = joint_states_json;
+                    RCLCPP_INFO(rclcpp::get_logger("Datalogger"), "Joint states: %s", joint_states_json.dump().c_str());
+                }
             }
 
             else
@@ -181,6 +196,7 @@ void DataLogger::logAllObjects(std::unordered_map<std::string, vector<DataLogger
                   {"orientation", {obj.message.pose.orientation.w, obj.message.pose.orientation.x, obj.message.pose.orientation.y, obj.message.pose.orientation.z}}}},
                 {"status", robot_status.empty() ? "No status available" : robot_status},
                 {"navigation_path", robot_navigation_path.empty() ? "No navigation path available" : robot_navigation_path},
+                // {"joint_states", robot_status.contains("joint_states") ? robot_status["joint_states"] : "No joint states available"}
             });
         }
 
