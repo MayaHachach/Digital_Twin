@@ -853,6 +853,7 @@ void CommunicatorNode::fillObjectCounts()
         RCLCPP_INFO(this->get_logger(), "Object count of class %s is %d", pair.first.c_str(), object_counts[pair.first]);
     }
     // object_counts["total"] = total_object_count;
+    logger_.setTotalObjectCount(total_object_count);
     RCLCPP_INFO(this->get_logger(), "Total object count is %d", total_object_count);
 }
 

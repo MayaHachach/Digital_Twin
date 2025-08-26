@@ -30,7 +30,7 @@ private:
 
 public:
     std::string log_file_path_;
-    int total_object_count_ = 0;
+    int total_object_count_;
 
     struct object_map_struct
     {
@@ -58,7 +58,10 @@ public:
     void startLoggingThread();
     void stopLoggingThread();
 
-    void setTotalObjectCount(int count) { total_object_count_ = count; }
+    void setTotalObjectCount(int count) { 
+        total_object_count_ = count; 
+        RCLCPP_INFO(rclcpp::get_logger("DataLogger"), "Total object count updated in logger to %d", total_object_count_);
+    }
 };
 
 #endif //__DATA__LOGGER__HPP__
