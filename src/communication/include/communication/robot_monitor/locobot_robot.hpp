@@ -22,7 +22,6 @@ namespace communication
         }
 
         void initializeSubscribers(const std::map<std::string, std::string> &topics) override;
-        DataLogger::object_map_struct getStatusUpdate() override;
 
         // Callbacks for different status messages
 

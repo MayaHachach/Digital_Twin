@@ -48,13 +48,6 @@ namespace communication
         }
     }
 
-    DataLogger::object_map_struct LocobotRobotMonitor::getStatusUpdate()
-    {
-        DataLogger::object_map_struct dataStatus;
-        dataStatus.locobot_status = robot_status_;
-
-        return dataStatus;
-    };
 bool LocobotRobotMonitor::hasJointStatesChanged(const sensor_msgs::msg::JointState &current, const sensor_msgs::msg::JointState &previous) const
 {
     if (current.name != previous.name ||
