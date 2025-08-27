@@ -19,9 +19,11 @@
 #include "communication/robot_monitor/robot_interface.hpp"
 #include "communication/robot_monitor/husky_robot.hpp"
 #include "communication/robot_monitor/kobuki_robot.hpp"
+#include "communication/robot_monitor/locobot_robot.hpp"
 #include "communication/robot_monitor/robot_monitor_factory.hpp"
 #include "customed_interfaces/msg/husky_status.hpp"
 #include "customed_interfaces/msg/kobuki_status.hpp"
+#include "customed_interfaces/msg/locobot_status.hpp"
 #include "yaml-cpp/yaml.h"
 #include <filesystem> // C++17
 

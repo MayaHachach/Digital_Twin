@@ -33,6 +33,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Temp.msg"
   "msg/HuskyStatus.msg"
   "msg/KobukiStatus.msg"
+  "msg/LocobotStatus.msg"
 
   "srv/RequestHistory.srv"
   "srv/RequestSTOD.srv"

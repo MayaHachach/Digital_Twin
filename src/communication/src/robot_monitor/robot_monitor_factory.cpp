@@ -1,6 +1,7 @@
 #include "communication/robot_monitor/robot_interface.hpp"
 #include "communication/robot_monitor/husky_robot.hpp"
 #include "communication/robot_monitor/kobuki_robot.hpp"
+#include "communication/robot_monitor/locobot_robot.hpp"
 #include <memory>
 
 namespace communication
@@ -22,6 +23,10 @@ namespace communication
         else if (robot_type == "Kobuki")
         {
             monitor = std::make_shared<KobukiRobotMonitor>(node, robot_id);
+        }
+        else if (robot_type == "Locobot" )
+        {
+            monitor = std::make_shared<LocobotRobotMonitor>(node, robot_id);
         }
         else
         {

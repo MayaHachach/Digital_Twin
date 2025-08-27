@@ -46,6 +46,7 @@ add_executable(communicator_node
   src/data_logger.cpp
   src/robot_monitor/husky_robot.cpp
   src/robot_monitor/kobuki_robot.cpp
+  src/robot_monitor/locobot_robot.cpp
   src/robot_monitor/robot_monitor_factory.cpp
 )
 

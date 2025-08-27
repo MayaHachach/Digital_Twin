@@ -3,3 +3,4 @@ communicator_node:
     robot_classes:
       - Husky
       - Kobuki
+      - Locobot
