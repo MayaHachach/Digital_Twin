@@ -18,7 +18,7 @@ namespace communication
         sensor_msgs::msg::JointState joint_states_data;
 
         // default constructor
-        RobotStatus(){}
+        RobotStatus() {}
     };
 
     class RobotMonitor
@@ -33,29 +33,34 @@ namespace communication
 
         virtual ~RobotMonitor() = default;
 
-        //Pure virtual function to initialize subscribers
+        // Pure virtual function to initialize subscribers
         virtual void initializeSubscribers(const std::map<std::string, std::string> &topics) = 0;
 
-        //set the navigation path
+        // set the navigation path
         void setNavigationPath(const nav_msgs::msg::Path &path)
         {
             status_.navigation_path_data = path;
             RCLCPP_INFO(rclcpp::get_logger("RobotMonitor"), "Set navigation path for robot %s", robot_id_.c_str());
-
         }
 
-        //Get the current status
+        // Get the current status
         const RobotStatus &getStatus() const
         {
             return status_;
+        }
+
+        void registerJointStateCallback(std::function<void()> callback)
+        {
+            joint_state_change_callback_ = callback;
         }
 
     protected:
         RobotStatus status_;
         std::string robot_id_;
         std::string robot_type_;
+        std::function<void()> joint_state_change_callback_;
     };
 
-} //namespace communication
+} // namespace communication
 
 #endif // ROBOT_INTERFACE_HPP__

@@ -26,18 +26,28 @@ namespace communication
             if (joint_states_it != topics.end())
             {
                 RCLCPP_WARN(this->node_->get_logger(), "Joint states topic found: %s", joint_states_it->second.c_str());
+                
                 joint_states_subscriber_ = this->node_->create_subscription<sensor_msgs::msg::JointState>(
                     joint_states_it->second, qos_profile,
                     [this](const sensor_msgs::msg::JointState::SharedPtr msg)
                     {
                         // Handle joint states if needed
                         RCLCPP_INFO(this->node_->get_logger(), "Received joint states for Locobot robot %s", robot_id_.c_str());
-                        status_.joint_states_data = *msg;
-                        RCLCPP_INFO(this->node_->get_logger(),
-                                    "Joint states: %s", msg->name.size() > 0 ? msg->name[0].c_str() : "No joints");
+                        if (hasJointStatesChanged(*msg, status_.joint_states_data))
+                        {
+                            RCLCPP_INFO(this->node_->get_logger(), "Joint states have changed for Locobot robot %s", robot_id_.c_str());
+                            status_.joint_states_data = *msg;
+                            fillPublisherMsg();
+
+                            if (joint_state_change_callback_)
+                                joint_state_change_callback_();
+                        }
+                        // status_.joint_states_data = *msg;
+                        // RCLCPP_INFO(this->node_->get_logger(),
+                        //             "Joint states: %s", msg->name.size() > 0 ? msg->name[0].c_str() : "No joints");
 
                         // Fill the custom message with the status data
-                        fillPublisherMsg();
+                        // fillPublisherMsg();
                     });
             }
         }
@@ -48,17 +58,17 @@ namespace communication
         }
     }
 
-bool LocobotRobotMonitor::hasJointStatesChanged(const sensor_msgs::msg::JointState &current, const sensor_msgs::msg::JointState &previous) const
-{
-    if (current.name != previous.name ||
-        current.position != previous.position ||
-        current.velocity != previous.velocity ||
-        current.effort != previous.effort)
+    bool LocobotRobotMonitor::hasJointStatesChanged(const sensor_msgs::msg::JointState &current, const sensor_msgs::msg::JointState &previous) const
     {
-        return true;
+        if (current.name != previous.name ||
+            current.position != previous.position ||
+            current.velocity != previous.velocity ||
+            current.effort != previous.effort)
+        {
+            return true;
+        }
+        return false;
     }
-    return false;
-}
 
     void LocobotRobotMonitor::fillPublisherMsg()
     {

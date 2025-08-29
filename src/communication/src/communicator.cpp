@@ -146,7 +146,7 @@ void CommunicatorNode::objectUpdate(const customed_interfaces::msg::Object::Shar
         }
         logger_.logAllObjects(object_map_, robot_monitors_);
         RCLCPP_INFO(this->get_logger(), "All %s objects have been corrected", message->name.c_str());
-        
+
         // delete temp objects
         temp_map.erase(temp_it);
     }
@@ -392,8 +392,6 @@ void CommunicatorNode::tempResponseCallback(const customed_interfaces::msg::Temp
         }
     }
 }
-
-
 
 void CommunicatorNode::humanCorrectionCallback(const customed_interfaces::msg::Object::SharedPtr human_corrected_msg)
 {
@@ -758,6 +756,11 @@ void CommunicatorNode::InitializeRobotMonitor()
                 robot_monitors_[robot_id] = monitor;
                 // RCLCPP_INFO(this->get_logger(), "Created monitor for robot %s of type %s",
                 // robot_id.c_str(), config.type.c_str());
+
+                monitor->registerJointStateCallback([this, robot_id]()
+                                                    {
+                    RCLCPP_INFO(this->get_logger(), "Joint state changed for robot %s. Logging data...", robot_id.c_str());
+                    this->logger_.logAllObjects(this->object_map_, this->robot_monitors_); });
             }
             else
             {
