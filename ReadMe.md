@@ -3,6 +3,11 @@
 ## Overview
 The Communication package is a ROS 2 package that serves as the backbone for the Digital Twin system, facilitating real-time communication between physical robots, the digital twin environment, and human operators through XR interfaces. It provides robust services for object tracking, state management, and historical data logging.
 
+## Environment
+
+- **Operating System**: Ubuntu 22.04 LTS  
+- **ROS 2 Distribution**: Humble
+
 ## Prerequisites
 
 ### Required Dependencies

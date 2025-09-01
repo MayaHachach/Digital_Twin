@@ -97,6 +97,7 @@ void DataLogger::logAllObjects(std::unordered_map<std::string, vector<DataLogger
     // Create a JSON entry
     nlohmann::json json_entry;
     json_entry["timestamp"] = timestamp;
+    json_entry["total_object_count"] = total_object_count_;
     json_entry["objects"] = nlohmann::json::array();
 
     // Add all objects in the map to the JSON array

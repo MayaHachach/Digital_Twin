@@ -1,4 +1,5 @@
 #include "communication/setup.hpp"
+std::shared_ptr<SetupNode> node;
 
 SetupNode::SetupNode() : Node("setup_node"), logger_("initial_history")
 {
@@ -7,7 +8,6 @@ SetupNode::SetupNode() : Node("setup_node"), logger_("initial_history")
         std::bind(&SetupNode::STODExtractionCallback, this, std::placeholders::_1));
 
     RCLCPP_INFO(this->get_logger(), "Setup node initialized and waiting for STOD...");
-
 }
 
 void SetupNode::STODExtractionCallback(const customed_interfaces::msg::Object::SharedPtr msg)
@@ -16,7 +16,9 @@ void SetupNode::STODExtractionCallback(const customed_interfaces::msg::Object::S
     {
         for (auto &pair : object_map_)
         {
+            int count = pair.second.size();
             object_counts_[pair.first] = pair.second.size();
+            total_object_count_ += count;
 
             std::sort(pair.second.begin(), pair.second.end(),
                       [](const auto &a, const auto &b)
@@ -117,14 +119,40 @@ DataLogger::object_map_struct SetupNode::AddNewObject(const customed_interfaces:
 
     object_map_[message.name].push_back(new_object);
     RCLCPP_INFO(this->get_logger(), "Added new object: %s with id %d", message.name.c_str(), new_object.message.id);
-    
+
     return new_object;
+}
+
+void onShutdown()
+{
+    if (!node)
+        return;
+
+    int total_object_count = 0;
+    for (auto &pair : node->object_map_)
+    {
+        int count = pair.second.size();
+        node->object_counts_[pair.first] = count;
+        total_object_count += count;
+
+        std::sort(pair.second.begin(), pair.second.end(),
+                  [](const auto &a, const auto &b)
+                  { return a.message.id < b.message.id; });
+    }
+
+    node->logger_.setTotalObjectCount(total_object_count);
+    node->logger_.logAllObjects(node->object_map_);
+    node->GenerateConfigFile();
+
+    RCLCPP_INFO(node->get_logger(), "✅ Setup complete. Config and log generated with %d objects.", total_object_count);
 }
 
 int main(int argc, char *argv[])
 {
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<SetupNode>());
+    node = std::make_shared<SetupNode>();
+    rclcpp::on_shutdown(onShutdown);
+    rclcpp::spin(node);
     rclcpp::shutdown();
     return 0;
 }

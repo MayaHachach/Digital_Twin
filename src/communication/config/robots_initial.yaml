@@ -6,8 +6,8 @@ communicator_node:
         topics:
           odometry: /transformed_odom
           navigation:
-            navigation_path: e.g. /transformed_global_plan
-            navigation_status: e.g. /navigate_to_pose/_action/status
+            navigation_path: e.g. /Husky1/transformed_global_plan
+            navigation_status: e.g. /Husky1/navigate_to_pose/_action/status
           feedback:
             robot_status: /husky/status
 
@@ -23,3 +23,13 @@ communicator_node:
             wheel_vel: /wheel_vels
             navigation_path: /plan 
             joint_states: /joint_states
+      
+      Locobot1:
+        type: Locobot
+        topics:
+          odometry: e.g. /odom
+          navigation:
+            navigation_path: e.g. /transformed_global_plan
+            navigation_status: e.g. /navigate_to_pose/_action/status
+          feedback:
+            joint_states: /wx200/joint_states
