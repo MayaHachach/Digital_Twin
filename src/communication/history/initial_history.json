@@ -412,6 +412,1805 @@
             "timestamp": "2025-09-01T16:39:49",
             "total_object_count": 11
         },
+        "10": {
+            "objects": [
+                {
+                    "id": 1,
+                    "name": "Kobuki1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            0.81,
+                            0.0,
+                            0.0,
+                            0.586
+                        ],
+                        "position": [
+                            2.088,
+                            -0.79,
+                            -1.789
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": "/slam_odom"
+                },
+                {
+                    "id": 1,
+                    "name": "GreenChair1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            -0.07,
+                            -5.05,
+                            -1.8
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 2,
+                    "name": "GreenChair2",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.12,
+                            0.0,
+                            0.0,
+                            0.99
+                        ],
+                        "position": [
+                            -1.967,
+                            -1.135,
+                            -1.79
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "RedRobot1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            -3.68,
+                            -3.169,
+                            -1.7
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "Husky1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            2.4155,
+                            -3.29,
+                            -1.622
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": "/transformed_odom"
+                },
+                {
+                    "id": 1,
+                    "name": "BMWRobot1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.07,
+                            0.0,
+                            0.0,
+                            0.99
+                        ],
+                        "position": [
+                            0.2294,
+                            -2.84,
+                            -1.64
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "RedChair1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.7,
+                            0.0,
+                            0.0,
+                            0.7
+                        ],
+                        "position": [
+                            -0.139,
+                            -0.94,
+                            -1.78
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 2,
+                    "name": "RedChair2",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.7,
+                            0.0,
+                            0.0,
+                            0.7
+                        ],
+                        "position": [
+                            -0.139,
+                            -0.94,
+                            -1.78
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 3,
+                    "name": "RedChair3",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            0.7,
+                            0.0,
+                            0.0,
+                            0.7
+                        ],
+                        "position": [
+                            -1.243,
+                            -5.1594,
+                            -1.69
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "Locobot1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            -0.99625,
+                            -0.8,
+                            -1.07973
+                        ]
+                    },
+                    "status": {
+                        "angular_velocity": -2.883889105008996,
+                        "battery_current": 0.8403759002685547,
+                        "battery_percentage": 0.030250780284404755,
+                        "battery_temperature": 33.91040802001953,
+                        "battery_voltage": 11.804081916809082,
+                        "joint_states": {
+                            "effort": [
+                                0.001314782588720591,
+                                0.00816933289084115,
+                                0.01900413847829525,
+                                0.01191793200761424,
+                                0.01191793200761424,
+                                2.9140084413840534e-05,
+                                2.961679400092852e-05,
+                                0.00010149172005369848
+                            ],
+                            "name": [
+                                "waist",
+                                "shoulder",
+                                "elbow",
+                                "wrist_angle",
+                                "wrist_rotate",
+                                "gripper",
+                                "right_finger",
+                                "left_finger"
+                            ],
+                            "position": [
+                                -0.49807557073243547,
+                                -0.3784431267572362,
+                                -0.44178923841789025,
+                                0.03502585350391217,
+                                0.03502585350391217,
+                                0.004754201900739925,
+                                0.004779698014159953,
+                                0.019782060410908273
+                            ],
+                            "velocity": [
+                                0.02629565177441182,
+                                -0.16338665781682302,
+                                0.380082769565905,
+                                0.23835864015228478,
+                                0.23835864015228478,
+                                0.0005828016882768106,
+                                0.0005923358800185703,
+                                0.0020298344010739695
+                            ]
+                        },
+                        "left_wheel_velocity": 0.18430496752262115,
+                        "linear_velocity": -0.14734229445457458,
+                        "right_wheel_velocity": -0.47898954153060913
+                    },
+                    "topic_name": ""
+                }
+            ],
+            "timestamp": "2025-09-10T11:51:48",
+            "total_object_count": 10
+        },
+        "11": {
+            "objects": [
+                {
+                    "id": 1,
+                    "name": "Kobuki1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            0.81,
+                            0.0,
+                            0.0,
+                            0.586
+                        ],
+                        "position": [
+                            2.088,
+                            -0.79,
+                            -1.789
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": "/slam_odom"
+                },
+                {
+                    "id": 1,
+                    "name": "GreenChair1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            -0.07,
+                            -5.05,
+                            -1.8
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 2,
+                    "name": "GreenChair2",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.12,
+                            0.0,
+                            0.0,
+                            0.99
+                        ],
+                        "position": [
+                            -1.967,
+                            -1.135,
+                            -1.79
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "RedRobot1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            -3.68,
+                            -3.169,
+                            -1.7
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "Husky1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            2.4155,
+                            -3.29,
+                            -1.622
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": "/transformed_odom"
+                },
+                {
+                    "id": 1,
+                    "name": "BMWRobot1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.07,
+                            0.0,
+                            0.0,
+                            0.99
+                        ],
+                        "position": [
+                            0.2294,
+                            -2.84,
+                            -1.64
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "RedChair1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.7,
+                            0.0,
+                            0.0,
+                            0.7
+                        ],
+                        "position": [
+                            -0.139,
+                            -0.94,
+                            -1.78
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 2,
+                    "name": "RedChair2",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.7,
+                            0.0,
+                            0.0,
+                            0.7
+                        ],
+                        "position": [
+                            -0.139,
+                            -0.94,
+                            -1.78
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 3,
+                    "name": "RedChair3",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            0.7,
+                            0.0,
+                            0.0,
+                            0.7
+                        ],
+                        "position": [
+                            -1.243,
+                            -5.1594,
+                            -1.69
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "Locobot1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            -0.99625,
+                            -0.8,
+                            -1.07973
+                        ]
+                    },
+                    "status": {
+                        "angular_velocity": -7.111257573832636,
+                        "battery_current": 0.15058636665344238,
+                        "battery_percentage": 0.3914465308189392,
+                        "battery_temperature": 31.89799690246582,
+                        "battery_voltage": 12.433234214782715,
+                        "joint_states": {
+                            "effort": [
+                                0.009522054530378219,
+                                0.002633487927438537,
+                                0.02449646736137522,
+                                0.007298395446375109,
+                                0.007298395446375109,
+                                2.891306954140833e-05,
+                                2.951528512170007e-05,
+                                9.308018612600614e-05
+                            ],
+                            "name": [
+                                "waist",
+                                "shoulder",
+                                "elbow",
+                                "wrist_angle",
+                                "wrist_rotate",
+                                "gripper",
+                                "right_finger",
+                                "left_finger"
+                            ],
+                            "position": [
+                                -0.3863367522432896,
+                                -0.48877764488329123,
+                                0.011886772380048436,
+                                0.23813523456789615,
+                                0.23813523456789615,
+                                0.005334766877909298,
+                                0.005371028224162534,
+                                0.021729059964722845
+                            ],
+                            "velocity": [
+                                0.19044109060756437,
+                                -0.052669758548770734,
+                                0.48992934722750436,
+                                0.14596790892750217,
+                                0.14596790892750217,
+                                0.0005782613908281665,
+                                0.0005903057024340013,
+                                0.0018616037225201226
+                            ]
+                        },
+                        "left_wheel_velocity": 0.9950045943260193,
+                        "linear_velocity": 0.1772099733352661,
+                        "right_wheel_velocity": -0.6405846476554871
+                    },
+                    "topic_name": ""
+                }
+            ],
+            "timestamp": "2025-09-10T11:51:49",
+            "total_object_count": 10
+        },
+        "12": {
+            "objects": [
+                {
+                    "id": 1,
+                    "name": "Kobuki1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            0.81,
+                            0.0,
+                            0.0,
+                            0.586
+                        ],
+                        "position": [
+                            2.088,
+                            -0.79,
+                            -1.789
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": "/slam_odom"
+                },
+                {
+                    "id": 1,
+                    "name": "GreenChair1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            -0.07,
+                            -5.05,
+                            -1.8
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 2,
+                    "name": "GreenChair2",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.12,
+                            0.0,
+                            0.0,
+                            0.99
+                        ],
+                        "position": [
+                            -1.967,
+                            -1.135,
+                            -1.79
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "RedRobot1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            -3.68,
+                            -3.169,
+                            -1.7
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "Husky1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            2.4155,
+                            -3.29,
+                            -1.622
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": "/transformed_odom"
+                },
+                {
+                    "id": 1,
+                    "name": "BMWRobot1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.07,
+                            0.0,
+                            0.0,
+                            0.99
+                        ],
+                        "position": [
+                            0.2294,
+                            -2.84,
+                            -1.64
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "RedChair1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.7,
+                            0.0,
+                            0.0,
+                            0.7
+                        ],
+                        "position": [
+                            -0.139,
+                            -0.94,
+                            -1.78
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 2,
+                    "name": "RedChair2",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.7,
+                            0.0,
+                            0.0,
+                            0.7
+                        ],
+                        "position": [
+                            -0.139,
+                            -0.94,
+                            -1.78
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 3,
+                    "name": "RedChair3",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            0.7,
+                            0.0,
+                            0.0,
+                            0.7
+                        ],
+                        "position": [
+                            -1.243,
+                            -5.1594,
+                            -1.69
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "Locobot1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            -0.99625,
+                            -0.8,
+                            -1.07973
+                        ]
+                    },
+                    "status": {
+                        "angular_velocity": -5.121958255767822,
+                        "battery_current": -0.6844795942306519,
+                        "battery_percentage": 0.2539569139480591,
+                        "battery_temperature": 33.92472839355469,
+                        "battery_voltage": 11.97952651977539,
+                        "joint_states": {
+                            "effort": [
+                                0.014403161503435239,
+                                0.00354722477676293,
+                                0.018467883706594183,
+                                0.0017482942724144233,
+                                0.0017482942724144233,
+                                2.8660030436906054e-05,
+                                2.9401968545560118e-05,
+                                8.391504706780388e-05
+                            ],
+                            "name": [
+                                "waist",
+                                "shoulder",
+                                "elbow",
+                                "wrist_angle",
+                                "wrist_rotate",
+                                "gripper",
+                                "right_finger",
+                                "left_finger"
+                            ],
+                            "position": [
+                                -0.13963817810470497,
+                                -0.4794450064532852,
+                                0.4599798322106982,
+                                0.2967990346356467,
+                                0.2967990346356467,
+                                0.005910542571658382,
+                                0.005960221946026284,
+                                0.023500212634297545
+                            ],
+                            "velocity": [
+                                0.28806323006870477,
+                                0.0709444955352586,
+                                0.36935767413188364,
+                                -0.034965885448288464,
+                                -0.034965885448288464,
+                                0.0005732006087381211,
+                                0.0005880393709112023,
+                                0.0016783009413560775
+                            ]
+                        },
+                        "left_wheel_velocity": 0.5203040838241577,
+                        "linear_velocity": -0.06872111558914185,
+                        "right_wheel_velocity": -0.6577463150024414
+                    },
+                    "topic_name": ""
+                }
+            ],
+            "timestamp": "2025-09-10T11:51:50",
+            "total_object_count": 10
+        },
+        "13": {
+            "objects": [
+                {
+                    "id": 1,
+                    "name": "Kobuki1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            0.81,
+                            0.0,
+                            0.0,
+                            0.586
+                        ],
+                        "position": [
+                            2.088,
+                            -0.79,
+                            -1.789
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": "/slam_odom"
+                },
+                {
+                    "id": 1,
+                    "name": "GreenChair1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            -0.07,
+                            -5.05,
+                            -1.8
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 2,
+                    "name": "GreenChair2",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.12,
+                            0.0,
+                            0.0,
+                            0.99
+                        ],
+                        "position": [
+                            -1.967,
+                            -1.135,
+                            -1.79
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "RedRobot1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            -3.68,
+                            -3.169,
+                            -1.7
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "Husky1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            2.4155,
+                            -3.29,
+                            -1.622
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": "/transformed_odom"
+                },
+                {
+                    "id": 1,
+                    "name": "BMWRobot1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.07,
+                            0.0,
+                            0.0,
+                            0.99
+                        ],
+                        "position": [
+                            0.2294,
+                            -2.84,
+                            -1.64
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "RedChair1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.7,
+                            0.0,
+                            0.0,
+                            0.7
+                        ],
+                        "position": [
+                            -0.139,
+                            -0.94,
+                            -1.78
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 2,
+                    "name": "RedChair2",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.7,
+                            0.0,
+                            0.0,
+                            0.7
+                        ],
+                        "position": [
+                            -0.139,
+                            -0.94,
+                            -1.78
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 3,
+                    "name": "RedChair3",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            0.7,
+                            0.0,
+                            0.0,
+                            0.7
+                        ],
+                        "position": [
+                            -1.243,
+                            -5.1594,
+                            -1.69
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "Locobot1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            -0.99625,
+                            -0.8,
+                            -1.07973
+                        ]
+                    },
+                    "status": {
+                        "angular_velocity": -2.641821944195291,
+                        "battery_current": 0.6364049315452576,
+                        "battery_percentage": 0.008470921777188778,
+                        "battery_temperature": 29.12554931640625,
+                        "battery_voltage": 12.068096160888672,
+                        "joint_states": {
+                            "effort": [
+                                0.01425273730647849,
+                                0.008859553801918642,
+                                0.0037531180318669554,
+                                0.009734620721646575,
+                                0.009734620721646575,
+                                2.838119215086464e-05,
+                                2.9276888390467916e-05,
+                                7.407040906711258e-05
+                            ],
+                            "name": [
+                                "waist",
+                                "shoulder",
+                                "elbow",
+                                "wrist_angle",
+                                "wrist_rotate",
+                                "gripper",
+                                "right_finger",
+                                "left_finger"
+                            ],
+                            "position": [
+                                0.1558470734495706,
+                                -0.35272268184716205,
+                                0.6917378912823963,
+                                0.17542298774264364,
+                                0.17542298774264364,
+                                0.006481012681353621,
+                                0.006547045606384969,
+                                0.02508117635675305
+                            ],
+                            "velocity": [
+                                0.28505474612956977,
+                                0.17719107603837284,
+                                0.0750623606373391,
+                                -0.19469241443293148,
+                                -0.19469241443293148,
+                                0.0005676238430172928,
+                                0.0005855377678093583,
+                                0.0014814081813422516
+                            ]
+                        },
+                        "left_wheel_velocity": -0.29317978024482727,
+                        "linear_velocity": -0.5969892740249634,
+                        "right_wheel_velocity": -0.9007987976074219
+                    },
+                    "topic_name": ""
+                }
+            ],
+            "timestamp": "2025-09-10T11:51:51",
+            "total_object_count": 10
+        },
+        "14": {
+            "objects": [
+                {
+                    "id": 1,
+                    "name": "Kobuki1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            0.81,
+                            0.0,
+                            0.0,
+                            0.586
+                        ],
+                        "position": [
+                            2.088,
+                            -0.79,
+                            -1.789
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": "/slam_odom"
+                },
+                {
+                    "id": 1,
+                    "name": "GreenChair1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            -0.07,
+                            -5.05,
+                            -1.8
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 2,
+                    "name": "GreenChair2",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.12,
+                            0.0,
+                            0.0,
+                            0.99
+                        ],
+                        "position": [
+                            -1.967,
+                            -1.135,
+                            -1.79
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "RedRobot1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            -3.68,
+                            -3.169,
+                            -1.7
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "Husky1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            2.4155,
+                            -3.29,
+                            -1.622
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": "/transformed_odom"
+                },
+                {
+                    "id": 1,
+                    "name": "BMWRobot1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.07,
+                            0.0,
+                            0.0,
+                            0.99
+                        ],
+                        "position": [
+                            0.2294,
+                            -2.84,
+                            -1.64
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "RedChair1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.7,
+                            0.0,
+                            0.0,
+                            0.7
+                        ],
+                        "position": [
+                            -0.139,
+                            -0.94,
+                            -1.78
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 2,
+                    "name": "RedChair2",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.7,
+                            0.0,
+                            0.0,
+                            0.7
+                        ],
+                        "position": [
+                            -0.139,
+                            -0.94,
+                            -1.78
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 3,
+                    "name": "RedChair3",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            0.7,
+                            0.0,
+                            0.0,
+                            0.7
+                        ],
+                        "position": [
+                            -1.243,
+                            -5.1594,
+                            -1.69
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "Locobot1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            -0.99625,
+                            -0.8,
+                            -1.07973
+                        ]
+                    },
+                    "status": {
+                        "angular_velocity": 1.7498187396837317,
+                        "battery_current": -0.9305456876754761,
+                        "battery_percentage": 0.04629289358854294,
+                        "battery_temperature": 39.80594253540039,
+                        "battery_voltage": 11.939091682434082,
+                        "joint_states": {
+                            "effort": [
+                                0.009122885297927184,
+                                0.012002711322130596,
+                                0.012727463770235665,
+                                0.01181569524498844,
+                                0.01181569524498844,
+                                2.8076798883140474e-05,
+                                2.9140091639824722e-05,
+                                6.362575235483169e-05
+                            ],
+                            "name": [
+                                "waist",
+                                "shoulder",
+                                "elbow",
+                                "wrist_angle",
+                                "wrist_rotate",
+                                "gripper",
+                                "right_finger",
+                                "left_finger"
+                            ],
+                            "position": [
+                                0.3968948417134416,
+                                -0.13962762430177214,
+                                0.5981342870021942,
+                                -0.05237691450890824,
+                                -0.05237691450890824,
+                                0.007045672098708909,
+                                0.007131273324071763,
+                                0.02645915896620852
+                            ],
+                            "velocity": [
+                                0.18245770595854366,
+                                0.2400542264426119,
+                                -0.2545492754047133,
+                                -0.2363139048997688,
+                                -0.2363139048997688,
+                                0.0005615359776628095,
+                                0.0005828018327964944,
+                                0.0012725150470966338
+                            ]
+                        },
+                        "left_wheel_velocity": -0.3738858103752136,
+                        "linear_velocity": -0.17265665531158447,
+                        "right_wheel_velocity": 0.028572488576173782
+                    },
+                    "topic_name": ""
+                }
+            ],
+            "timestamp": "2025-09-10T11:51:52",
+            "total_object_count": 10
+        },
+        "15": {
+            "objects": [
+                {
+                    "id": 1,
+                    "name": "Kobuki1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            0.81,
+                            0.0,
+                            0.0,
+                            0.586
+                        ],
+                        "position": [
+                            2.088,
+                            -0.79,
+                            -1.789
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": "/slam_odom"
+                },
+                {
+                    "id": 1,
+                    "name": "GreenChair1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            -0.07,
+                            -5.05,
+                            -1.8
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 2,
+                    "name": "GreenChair2",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.12,
+                            0.0,
+                            0.0,
+                            0.99
+                        ],
+                        "position": [
+                            -1.967,
+                            -1.135,
+                            -1.79
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "RedRobot1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            -3.68,
+                            -3.169,
+                            -1.7
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "Husky1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            2.4155,
+                            -3.29,
+                            -1.622
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": "/transformed_odom"
+                },
+                {
+                    "id": 1,
+                    "name": "BMWRobot1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.07,
+                            0.0,
+                            0.0,
+                            0.99
+                        ],
+                        "position": [
+                            0.2294,
+                            -2.84,
+                            -1.64
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "RedChair1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.7,
+                            0.0,
+                            0.0,
+                            0.7
+                        ],
+                        "position": [
+                            -0.139,
+                            -0.94,
+                            -1.78
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 2,
+                    "name": "RedChair2",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.7,
+                            0.0,
+                            0.0,
+                            0.7
+                        ],
+                        "position": [
+                            -0.139,
+                            -0.94,
+                            -1.78
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 3,
+                    "name": "RedChair3",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            0.7,
+                            0.0,
+                            0.0,
+                            0.7
+                        ],
+                        "position": [
+                            -1.243,
+                            -5.1594,
+                            -1.69
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "Locobot1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            -0.99625,
+                            -0.8,
+                            -1.07973
+                        ]
+                    },
+                    "status": {
+                        "angular_velocity": -7.553326565286388,
+                        "battery_current": -0.2647809684276581,
+                        "battery_percentage": 0.05786457285284996,
+                        "battery_temperature": 38.524410247802734,
+                        "battery_voltage": 12.379535675048828,
+                        "joint_states": {
+                            "effort": [
+                                0.0008073236460241036,
+                                0.012207044886572434,
+                                0.023220401523245976,
+                                0.006730035606105764,
+                                0.006730035606105764,
+                                2.7747195355026454e-05,
+                                2.899166488494516e-05,
+                                5.266797818845083e-05
+                            ],
+                            "name": [
+                                "waist",
+                                "shoulder",
+                                "elbow",
+                                "wrist_angle",
+                                "wrist_rotate",
+                                "gripper",
+                                "right_finger",
+                                "left_finger"
+                            ],
+                            "position": [
+                                0.4992752842655157,
+                                0.10761453535433457,
+                                0.22326510845279313,
+                                -0.24837801425014028,
+                                -0.24837801425014028,
+                                0.007603892276108726,
+                                0.007712546090561637,
+                                0.027622753256306802
+                            ],
+                            "velocity": [
+                                0.01614647292048207,
+                                0.24414089773144865,
+                                -0.46440803046491946,
+                                -0.13460071212211527,
+                                -0.13460071212211527,
+                                0.000554943907100529,
+                                0.0005798332976989032,
+                                0.0010533595637690165
+                            ]
+                        },
+                        "left_wheel_velocity": 0.9933475852012634,
+                        "linear_velocity": 0.12471503019332886,
+                        "right_wheel_velocity": -0.7439175248146057
+                    },
+                    "topic_name": ""
+                }
+            ],
+            "timestamp": "2025-09-10T11:51:53",
+            "total_object_count": 10
+        },
+        "16": {
+            "objects": [
+                {
+                    "id": 1,
+                    "name": "Kobuki1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            0.81,
+                            0.0,
+                            0.0,
+                            0.586
+                        ],
+                        "position": [
+                            2.088,
+                            -0.79,
+                            -1.789
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": "/slam_odom"
+                },
+                {
+                    "id": 1,
+                    "name": "GreenChair1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            -0.07,
+                            -5.05,
+                            -1.8
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 2,
+                    "name": "GreenChair2",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.12,
+                            0.0,
+                            0.0,
+                            0.99
+                        ],
+                        "position": [
+                            -1.967,
+                            -1.135,
+                            -1.79
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "RedRobot1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            -3.68,
+                            -3.169,
+                            -1.7
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "Husky1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            2.4155,
+                            -3.29,
+                            -1.622
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": "/transformed_odom"
+                },
+                {
+                    "id": 1,
+                    "name": "BMWRobot1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.07,
+                            0.0,
+                            0.0,
+                            0.99
+                        ],
+                        "position": [
+                            0.2294,
+                            -2.84,
+                            -1.64
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "RedChair1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.7,
+                            0.0,
+                            0.0,
+                            0.7
+                        ],
+                        "position": [
+                            -0.139,
+                            -0.94,
+                            -1.78
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 2,
+                    "name": "RedChair2",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.7,
+                            0.0,
+                            0.0,
+                            0.7
+                        ],
+                        "position": [
+                            -0.139,
+                            -0.94,
+                            -1.78
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 3,
+                    "name": "RedChair3",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            0.7,
+                            0.0,
+                            0.0,
+                            0.7
+                        ],
+                        "position": [
+                            -1.243,
+                            -5.1594,
+                            -1.69
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "Locobot1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            -0.99625,
+                            -0.8,
+                            -1.07973
+                        ]
+                    },
+                    "status": {
+                        "angular_velocity": 0.2745278503583825,
+                        "battery_current": 0.9788417816162109,
+                        "battery_percentage": 0.144386425614357,
+                        "battery_temperature": 25.12571144104004,
+                        "battery_voltage": 11.142971992492676,
+                        "joint_states": {
+                            "effort": [
+                                0.00779126618432172,
+                                0.00942274429506962,
+                                0.02279386090851262,
+                                0.0024384249813170396,
+                                0.0024384249813170396,
+                                2.7392575812916375e-05,
+                                2.883162140211739e-05,
+                                4.1282370170653104e-05
+                            ],
+                            "name": [
+                                "waist",
+                                "shoulder",
+                                "elbow",
+                                "wrist_angle",
+                                "wrist_rotate",
+                                "gripper",
+                                "right_finger",
+                                "left_finger"
+                            ],
+                            "position": [
+                                0.4272602267744836,
+                                0.3285407492527719,
+                                -0.2566501706776791,
+                                -0.2937410462576785,
+                                -0.2937410462576785,
+                                0.008155346994010979,
+                                0.00829081463578619,
+                                0.028562918128311066
+                            ],
+                            "velocity": [
+                                -0.1558253236864344,
+                                0.1884548859013924,
+                                -0.45587721817025234,
+                                0.048768499626340785,
+                                0.048768499626340785,
+                                0.0005478515162583275,
+                                0.0005766324280423478,
+                                0.0008256474034130621
+                            ]
+                        },
+                        "left_wheel_velocity": 0.7739260196685791,
+                        "linear_velocity": 0.8054966926574707,
+                        "right_wheel_velocity": 0.8370674252510071
+                    },
+                    "topic_name": ""
+                }
+            ],
+            "timestamp": "2025-09-10T11:51:54",
+            "total_object_count": 10
+        },
         "2": {
             "objects": [
                 {
@@ -616,6 +2415,1805 @@
                 }
             ],
             "timestamp": "2025-09-01T16:40:33",
+            "total_object_count": 10
+        },
+        "3": {
+            "objects": [
+                {
+                    "id": 1,
+                    "name": "Kobuki1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            0.81,
+                            0.0,
+                            0.0,
+                            0.586
+                        ],
+                        "position": [
+                            2.088,
+                            -0.79,
+                            -1.789
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": "/slam_odom"
+                },
+                {
+                    "id": 1,
+                    "name": "GreenChair1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            -0.07,
+                            -5.05,
+                            -1.8
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 2,
+                    "name": "GreenChair2",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.12,
+                            0.0,
+                            0.0,
+                            0.99
+                        ],
+                        "position": [
+                            -1.967,
+                            -1.135,
+                            -1.79
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "RedRobot1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            -3.68,
+                            -3.169,
+                            -1.7
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "Husky1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            2.4155,
+                            -3.29,
+                            -1.622
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": "/transformed_odom"
+                },
+                {
+                    "id": 1,
+                    "name": "BMWRobot1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.07,
+                            0.0,
+                            0.0,
+                            0.99
+                        ],
+                        "position": [
+                            0.2294,
+                            -2.84,
+                            -1.64
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "RedChair1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.7,
+                            0.0,
+                            0.0,
+                            0.7
+                        ],
+                        "position": [
+                            -0.139,
+                            -0.94,
+                            -1.78
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 2,
+                    "name": "RedChair2",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.7,
+                            0.0,
+                            0.0,
+                            0.7
+                        ],
+                        "position": [
+                            -0.139,
+                            -0.94,
+                            -1.78
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 3,
+                    "name": "RedChair3",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            0.7,
+                            0.0,
+                            0.0,
+                            0.7
+                        ],
+                        "position": [
+                            -1.243,
+                            -5.1594,
+                            -1.69
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "Locobot1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            -0.99625,
+                            -0.8,
+                            -1.07973
+                        ]
+                    },
+                    "status": {
+                        "angular_velocity": 0.0,
+                        "battery_current": 0.0,
+                        "battery_percentage": 0.0,
+                        "battery_temperature": 0.0,
+                        "battery_voltage": 0.0,
+                        "joint_states": {
+                            "effort": [
+                                0.012378657692460352,
+                                0.010968970364958981,
+                                0.018735640882377447,
+                                0.008358615120036139,
+                                0.008358615120036139,
+                                2.998649369980197e-05,
+                                2.9993996949651883e-05,
+                                0.00013445332314896446
+                            ],
+                            "name": [
+                                "waist",
+                                "shoulder",
+                                "elbow",
+                                "wrist_angle",
+                                "wrist_rotate",
+                                "gripper",
+                                "right_finger",
+                                "left_finger"
+                            ],
+                            "position": [
+                                0.2823882940068558,
+                                0.23977218898830338,
+                                0.45105387770545996,
+                                0.2152521098547922,
+                                0.2152521098547922,
+                                0.0006000724370113617,
+                                0.0006001224743945677,
+                                0.002697084792929865
+                            ],
+                            "velocity": [
+                                0.24757315384920703,
+                                0.2193794072991796,
+                                0.37471281764754893,
+                                0.16717230240072276,
+                                0.16717230240072276,
+                                0.0005997298739960394,
+                                0.0005998799389930376,
+                                0.0026890664629792894
+                            ]
+                        },
+                        "left_wheel_velocity": 0.0,
+                        "linear_velocity": 0.0,
+                        "right_wheel_velocity": 0.0
+                    },
+                    "topic_name": ""
+                }
+            ],
+            "timestamp": "2025-09-10T11:51:41",
+            "total_object_count": 10
+        },
+        "4": {
+            "objects": [
+                {
+                    "id": 1,
+                    "name": "Kobuki1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            0.81,
+                            0.0,
+                            0.0,
+                            0.586
+                        ],
+                        "position": [
+                            2.088,
+                            -0.79,
+                            -1.789
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": "/slam_odom"
+                },
+                {
+                    "id": 1,
+                    "name": "GreenChair1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            -0.07,
+                            -5.05,
+                            -1.8
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 2,
+                    "name": "GreenChair2",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.12,
+                            0.0,
+                            0.0,
+                            0.99
+                        ],
+                        "position": [
+                            -1.967,
+                            -1.135,
+                            -1.79
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "RedRobot1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            -3.68,
+                            -3.169,
+                            -1.7
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "Husky1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            2.4155,
+                            -3.29,
+                            -1.622
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": "/transformed_odom"
+                },
+                {
+                    "id": 1,
+                    "name": "BMWRobot1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.07,
+                            0.0,
+                            0.0,
+                            0.99
+                        ],
+                        "position": [
+                            0.2294,
+                            -2.84,
+                            -1.64
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "RedChair1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.7,
+                            0.0,
+                            0.0,
+                            0.7
+                        ],
+                        "position": [
+                            -0.139,
+                            -0.94,
+                            -1.78
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 2,
+                    "name": "RedChair2",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.7,
+                            0.0,
+                            0.0,
+                            0.7
+                        ],
+                        "position": [
+                            -0.139,
+                            -0.94,
+                            -1.78
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 3,
+                    "name": "RedChair3",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            0.7,
+                            0.0,
+                            0.0,
+                            0.7
+                        ],
+                        "position": [
+                            -1.243,
+                            -5.1594,
+                            -1.69
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "Locobot1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            -0.99625,
+                            -0.8,
+                            -1.07973
+                        ]
+                    },
+                    "status": {
+                        "angular_velocity": 2.513747629912003,
+                        "battery_current": 0.13027667999267578,
+                        "battery_percentage": 0.3318200707435608,
+                        "battery_temperature": 24.46232795715332,
+                        "battery_voltage": 12.362342834472656,
+                        "joint_states": {
+                            "effort": [
+                                0.005432868306706319,
+                                0.006752212640536857,
+                                0.004159162209577869,
+                                0.00035325177282088233,
+                                0.00035325177282088233,
+                                2.994600012612816e-05,
+                                2.997599605436805e-05,
+                                0.0001328182507344133
+                            ],
+                            "name": [
+                                "waist",
+                                "shoulder",
+                                "elbow",
+                                "wrist_angle",
+                                "wrist_rotate",
+                                "gripper",
+                                "right_finger",
+                                "left_finger"
+                            ],
+                            "position": [
+                                0.46605190693501325,
+                                0.4207757111944068,
+                                0.6898395966850758,
+                                0.2998699855614501,
+                                0.2998699855614501,
+                                0.0011994584789130932,
+                                0.0011998585535432766,
+                                0.005371678229842497
+                            ],
+                            "velocity": [
+                                0.10865736613412637,
+                                0.13504425281073712,
+                                0.08318324419155738,
+                                -0.007065035456417647,
+                                -0.007065035456417647,
+                                0.0005989200025225632,
+                                0.000599519921087361,
+                                0.002656365014688266
+                            ]
+                        },
+                        "left_wheel_velocity": -0.6739941239356995,
+                        "linear_velocity": -0.3849131464958191,
+                        "right_wheel_velocity": -0.09583219885826111
+                    },
+                    "topic_name": ""
+                }
+            ],
+            "timestamp": "2025-09-10T11:51:42",
+            "total_object_count": 10
+        },
+        "5": {
+            "objects": [
+                {
+                    "id": 1,
+                    "name": "Kobuki1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            0.81,
+                            0.0,
+                            0.0,
+                            0.586
+                        ],
+                        "position": [
+                            2.088,
+                            -0.79,
+                            -1.789
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": "/slam_odom"
+                },
+                {
+                    "id": 1,
+                    "name": "GreenChair1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            -0.07,
+                            -5.05,
+                            -1.8
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 2,
+                    "name": "GreenChair2",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.12,
+                            0.0,
+                            0.0,
+                            0.99
+                        ],
+                        "position": [
+                            -1.967,
+                            -1.135,
+                            -1.79
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "RedRobot1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            -3.68,
+                            -3.169,
+                            -1.7
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "Husky1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            2.4155,
+                            -3.29,
+                            -1.622
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": "/transformed_odom"
+                },
+                {
+                    "id": 1,
+                    "name": "BMWRobot1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.07,
+                            0.0,
+                            0.0,
+                            0.99
+                        ],
+                        "position": [
+                            0.2294,
+                            -2.84,
+                            -1.64
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "RedChair1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.7,
+                            0.0,
+                            0.0,
+                            0.7
+                        ],
+                        "position": [
+                            -0.139,
+                            -0.94,
+                            -1.78
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 2,
+                    "name": "RedChair2",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.7,
+                            0.0,
+                            0.0,
+                            0.7
+                        ],
+                        "position": [
+                            -0.139,
+                            -0.94,
+                            -1.78
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 3,
+                    "name": "RedChair3",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            0.7,
+                            0.0,
+                            0.0,
+                            0.7
+                        ],
+                        "position": [
+                            -1.243,
+                            -5.1594,
+                            -1.69
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "Locobot1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            -0.99625,
+                            -0.8,
+                            -1.07973
+                        ]
+                    },
+                    "status": {
+                        "angular_velocity": 4.467659929524297,
+                        "battery_current": -0.9507372379302979,
+                        "battery_percentage": 0.7832829356193542,
+                        "battery_temperature": 39.55931854248047,
+                        "battery_voltage": 11.758841514587402,
+                        "joint_states": {
+                            "effort": [
+                                0.003410768802452894,
+                                0.0008822678478727225,
+                                0.012373352988470561,
+                                0.008850749586667579,
+                                0.008850749586667579,
+                                2.987855672459209e-05,
+                                2.9946004960396773e-05,
+                                0.00013010805876838698
+                            ],
+                            "name": [
+                                "waist",
+                                "shoulder",
+                                "elbow",
+                                "wrist_angle",
+                                "wrist_rotate",
+                                "gripper",
+                                "right_finger",
+                                "left_finger"
+                            ],
+                            "position": [
+                                0.4869025183935852,
+                                0.49875301052863436,
+                                0.6041692801185311,
+                                0.20258367369142752,
+                                0.20258367369142752,
+                                0.0017977576224387792,
+                                0.0017991072541379905,
+                                0.008002755832503235
+                            ],
+                            "velocity": [
+                                -0.06821537604905788,
+                                0.01764535695745445,
+                                -0.24746705976941122,
+                                -0.17701499173335158,
+                                -0.17701499173335158,
+                                0.0005975711344918418,
+                                0.0005989200992079355,
+                                0.0026021611753677394
+                            ]
+                        },
+                        "left_wheel_velocity": -0.7012863755226135,
+                        "linear_velocity": -0.18750549852848053,
+                        "right_wheel_velocity": 0.32627537846565247
+                    },
+                    "topic_name": ""
+                }
+            ],
+            "timestamp": "2025-09-10T11:51:43",
+            "total_object_count": 10
+        },
+        "6": {
+            "objects": [
+                {
+                    "id": 1,
+                    "name": "Kobuki1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            0.81,
+                            0.0,
+                            0.0,
+                            0.586
+                        ],
+                        "position": [
+                            2.088,
+                            -0.79,
+                            -1.789
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": "/slam_odom"
+                },
+                {
+                    "id": 1,
+                    "name": "GreenChair1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            -0.07,
+                            -5.05,
+                            -1.8
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 2,
+                    "name": "GreenChair2",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.12,
+                            0.0,
+                            0.0,
+                            0.99
+                        ],
+                        "position": [
+                            -1.967,
+                            -1.135,
+                            -1.79
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "RedRobot1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            -3.68,
+                            -3.169,
+                            -1.7
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "Husky1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            2.4155,
+                            -3.29,
+                            -1.622
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": "/transformed_odom"
+                },
+                {
+                    "id": 1,
+                    "name": "BMWRobot1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.07,
+                            0.0,
+                            0.0,
+                            0.99
+                        ],
+                        "position": [
+                            0.2294,
+                            -2.84,
+                            -1.64
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "RedChair1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.7,
+                            0.0,
+                            0.0,
+                            0.7
+                        ],
+                        "position": [
+                            -0.139,
+                            -0.94,
+                            -1.78
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 2,
+                    "name": "RedChair2",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.7,
+                            0.0,
+                            0.0,
+                            0.7
+                        ],
+                        "position": [
+                            -0.139,
+                            -0.94,
+                            -1.78
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 3,
+                    "name": "RedChair3",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            0.7,
+                            0.0,
+                            0.0,
+                            0.7
+                        ],
+                        "position": [
+                            -1.243,
+                            -5.1594,
+                            -1.69
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "Locobot1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            -0.99625,
+                            -0.8,
+                            -1.07973
+                        ]
+                    },
+                    "status": {
+                        "angular_velocity": 2.708025600599206,
+                        "battery_current": -0.1209775060415268,
+                        "battery_percentage": 0.8530994057655334,
+                        "battery_temperature": 22.514781951904297,
+                        "battery_voltage": 11.659618377685547,
+                        "joint_states": {
+                            "effort": [
+                                0.01106246659136479,
+                                0.00520329470453984,
+                                0.02308592216825254,
+                                0.011979393161169314,
+                                0.011979393161169314,
+                                2.978423140934547e-05,
+                                2.9904038876540137e-05,
+                                0.00012634497212415946
+                            ],
+                            "name": [
+                                "waist",
+                                "shoulder",
+                                "elbow",
+                                "wrist_angle",
+                                "wrist_rotate",
+                                "gripper",
+                                "right_finger",
+                                "left_finger"
+                            ],
+                            "position": [
+                                0.337674782585812,
+                                0.4546219954515314,
+                                0.2343731503069514,
+                                -0.017573764005789434,
+                                -0.017573764005789434,
+                                0.002394397103847837,
+                                0.0023975943923807896,
+                                0.010568875850252145
+                            ],
+                            "velocity": [
+                                -0.2212493318272958,
+                                -0.1040658940907968,
+                                -0.46171844336505075,
+                                -0.23958786322338627,
+                                -0.23958786322338627,
+                                0.0005956846281869094,
+                                0.0005980807775308027,
+                                0.002526899442483189
+                            ]
+                        },
+                        "left_wheel_velocity": -0.5301747918128967,
+                        "linear_velocity": -0.21875184774398804,
+                        "right_wheel_velocity": 0.09267109632492065
+                    },
+                    "topic_name": ""
+                }
+            ],
+            "timestamp": "2025-09-10T11:51:44",
+            "total_object_count": 10
+        },
+        "7": {
+            "objects": [
+                {
+                    "id": 1,
+                    "name": "Kobuki1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            0.81,
+                            0.0,
+                            0.0,
+                            0.586
+                        ],
+                        "position": [
+                            2.088,
+                            -0.79,
+                            -1.789
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": "/slam_odom"
+                },
+                {
+                    "id": 1,
+                    "name": "GreenChair1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            -0.07,
+                            -5.05,
+                            -1.8
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 2,
+                    "name": "GreenChair2",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.12,
+                            0.0,
+                            0.0,
+                            0.99
+                        ],
+                        "position": [
+                            -1.967,
+                            -1.135,
+                            -1.79
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "RedRobot1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            -3.68,
+                            -3.169,
+                            -1.7
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "Husky1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            2.4155,
+                            -3.29,
+                            -1.622
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": "/transformed_odom"
+                },
+                {
+                    "id": 1,
+                    "name": "BMWRobot1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.07,
+                            0.0,
+                            0.0,
+                            0.99
+                        ],
+                        "position": [
+                            0.2294,
+                            -2.84,
+                            -1.64
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "RedChair1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.7,
+                            0.0,
+                            0.0,
+                            0.7
+                        ],
+                        "position": [
+                            -0.139,
+                            -0.94,
+                            -1.78
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 2,
+                    "name": "RedChair2",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.7,
+                            0.0,
+                            0.0,
+                            0.7
+                        ],
+                        "position": [
+                            -0.139,
+                            -0.94,
+                            -1.78
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 3,
+                    "name": "RedChair3",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            0.7,
+                            0.0,
+                            0.0,
+                            0.7
+                        ],
+                        "position": [
+                            -1.243,
+                            -5.1594,
+                            -1.69
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "Locobot1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            -0.99625,
+                            -0.8,
+                            -1.07973
+                        ]
+                    },
+                    "status": {
+                        "angular_velocity": -1.4700677083886187,
+                        "battery_current": 0.2711107134819031,
+                        "battery_percentage": 0.6251931190490723,
+                        "battery_temperature": 24.5604190826416,
+                        "battery_voltage": 11.575860977172852,
+                        "joint_states": {
+                            "effort": [
+                                0.014850208257611614,
+                                0.010015240414951714,
+                                0.022941668110971453,
+                                0.007841887175612117,
+                                0.007841887175612117,
+                                2.966309834732756e-05,
+                                2.9850109819797577e-05,
+                                0.00012155902318409522
+                            ],
+                            "name": [
+                                "waist",
+                                "shoulder",
+                                "elbow",
+                                "wrist_angle",
+                                "wrist_rotate",
+                                "gripper",
+                                "right_finger",
+                                "left_finger"
+                            ],
+                            "position": [
+                                0.07048494485084374,
+                                0.29918545266965857,
+                                -0.24566422128843574,
+                                -0.22708038984709003,
+                                -0.22708038984709003,
+                                0.0029889125809135944,
+                                0.002995153376043412,
+                                0.013049580443619587
+                            ],
+                            "velocity": [
+                                -0.29700416515223227,
+                                -0.20030480829903427,
+                                -0.458833362219429,
+                                -0.15683774351224233,
+                                -0.15683774351224233,
+                                0.0005932619669465511,
+                                0.0005970021963959515,
+                                0.0024311804636819043
+                            ]
+                        },
+                        "left_wheel_velocity": 0.9158440828323364,
+                        "linear_velocity": 0.7467862963676453,
+                        "right_wheel_velocity": 0.5777285099029541
+                    },
+                    "topic_name": ""
+                }
+            ],
+            "timestamp": "2025-09-10T11:51:45",
+            "total_object_count": 10
+        },
+        "8": {
+            "objects": [
+                {
+                    "id": 1,
+                    "name": "Kobuki1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            0.81,
+                            0.0,
+                            0.0,
+                            0.586
+                        ],
+                        "position": [
+                            2.088,
+                            -0.79,
+                            -1.789
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": "/slam_odom"
+                },
+                {
+                    "id": 1,
+                    "name": "GreenChair1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            -0.07,
+                            -5.05,
+                            -1.8
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 2,
+                    "name": "GreenChair2",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.12,
+                            0.0,
+                            0.0,
+                            0.99
+                        ],
+                        "position": [
+                            -1.967,
+                            -1.135,
+                            -1.79
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "RedRobot1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            -3.68,
+                            -3.169,
+                            -1.7
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "Husky1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            2.4155,
+                            -3.29,
+                            -1.622
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": "/transformed_odom"
+                },
+                {
+                    "id": 1,
+                    "name": "BMWRobot1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.07,
+                            0.0,
+                            0.0,
+                            0.99
+                        ],
+                        "position": [
+                            0.2294,
+                            -2.84,
+                            -1.64
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "RedChair1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.7,
+                            0.0,
+                            0.0,
+                            0.7
+                        ],
+                        "position": [
+                            -0.139,
+                            -0.94,
+                            -1.78
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 2,
+                    "name": "RedChair2",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.7,
+                            0.0,
+                            0.0,
+                            0.7
+                        ],
+                        "position": [
+                            -0.139,
+                            -0.94,
+                            -1.78
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 3,
+                    "name": "RedChair3",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            0.7,
+                            0.0,
+                            0.0,
+                            0.7
+                        ],
+                        "position": [
+                            -1.243,
+                            -5.1594,
+                            -1.69
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "Locobot1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            -0.99625,
+                            -0.8,
+                            -1.07973
+                        ]
+                    },
+                    "status": {
+                        "angular_velocity": -3.35681386615919,
+                        "battery_current": 0.7535346150398254,
+                        "battery_percentage": 0.399949312210083,
+                        "battery_temperature": 33.166748046875,
+                        "battery_voltage": 11.691563606262207,
+                        "joint_states": {
+                            "effort": [
+                                0.013450386668796147,
+                                0.012375125229211992,
+                                0.012007676495452325,
+                                0.0010523635820397137,
+                                0.0010523635820397137,
+                                2.951527075379073e-05,
+                                2.978424123103104e-05,
+                                0.00011578912006101042
+                            ],
+                            "name": [
+                                "waist",
+                                "shoulder",
+                                "elbow",
+                                "wrist_angle",
+                                "wrist_rotate",
+                                "gripper",
+                                "right_finger",
+                                "left_finger"
+                            ],
+                            "position": [
+                                -0.22132705427807975,
+                                0.07049851699229824,
+                                -0.6101627117755352,
+                                -0.29884415973379475,
+                                -0.29884415973379475,
+                                0.003580738119464918,
+                                0.003591514205979229,
+                                0.015424655068271583
+                            ],
+                            "velocity": [
+                                -0.26900773337592293,
+                                -0.24750250458423984,
+                                -0.24015352990904648,
+                                0.02104727164079427,
+                                0.02104727164079427,
+                                0.0005903054150758146,
+                                0.0005956848246206208,
+                                0.0023157824012202083
+                            ]
+                        },
+                        "left_wheel_velocity": 0.10648077726364136,
+                        "linear_velocity": -0.2795528173446655,
+                        "right_wheel_velocity": -0.6655864119529724
+                    },
+                    "topic_name": ""
+                }
+            ],
+            "timestamp": "2025-09-10T11:51:46",
+            "total_object_count": 10
+        },
+        "9": {
+            "objects": [
+                {
+                    "id": 1,
+                    "name": "Kobuki1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            0.81,
+                            0.0,
+                            0.0,
+                            0.586
+                        ],
+                        "position": [
+                            2.088,
+                            -0.79,
+                            -1.789
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": "/slam_odom"
+                },
+                {
+                    "id": 1,
+                    "name": "GreenChair1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            -0.07,
+                            -5.05,
+                            -1.8
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 2,
+                    "name": "GreenChair2",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.12,
+                            0.0,
+                            0.0,
+                            0.99
+                        ],
+                        "position": [
+                            -1.967,
+                            -1.135,
+                            -1.79
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "RedRobot1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            -3.68,
+                            -3.169,
+                            -1.7
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "Husky1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            2.4155,
+                            -3.29,
+                            -1.622
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": "/transformed_odom"
+                },
+                {
+                    "id": 1,
+                    "name": "BMWRobot1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.07,
+                            0.0,
+                            0.0,
+                            0.99
+                        ],
+                        "position": [
+                            0.2294,
+                            -2.84,
+                            -1.64
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "RedChair1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.7,
+                            0.0,
+                            0.0,
+                            0.7
+                        ],
+                        "position": [
+                            -0.139,
+                            -0.94,
+                            -1.78
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 2,
+                    "name": "RedChair2",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            -0.7,
+                            0.0,
+                            0.0,
+                            0.7
+                        ],
+                        "position": [
+                            -0.139,
+                            -0.94,
+                            -1.78
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 3,
+                    "name": "RedChair3",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            0.7,
+                            0.0,
+                            0.0,
+                            0.7
+                        ],
+                        "position": [
+                            -1.243,
+                            -5.1594,
+                            -1.69
+                        ]
+                    },
+                    "status": "No status available",
+                    "topic_name": ""
+                },
+                {
+                    "id": 1,
+                    "name": "Locobot1",
+                    "navigation_path": "No navigation path available",
+                    "pose": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "position": [
+                            -0.99625,
+                            -0.8,
+                            -1.07973
+                        ]
+                    },
+                    "status": {
+                        "angular_velocity": -2.631130425826363,
+                        "battery_current": -0.3400439918041229,
+                        "battery_percentage": 0.6168047189712524,
+                        "battery_temperature": 35.42454147338867,
+                        "battery_voltage": 11.677367210388184,
+                        "joint_states": {
+                            "effort": [
+                                0.0073522122473106384,
+                                0.011705233381073269,
+                                0.00457320456896612,
+                                0.00930810377513111,
+                                0.00930810377513111,
+                                2.9340886780950893e-05,
+                                2.9706461740821434e-05,
+                                0.000109082162278237
+                            ],
+                            "name": [
+                                "waist",
+                                "shoulder",
+                                "elbow",
+                                "wrist_angle",
+                                "wrist_rotate",
+                                "gripper",
+                                "right_finger",
+                                "left_finger"
+                            ],
+                            "position": [
+                                -0.4358197576859491,
+                                -0.1754423506208604,
+                                -0.6876970144251724,
+                                -0.18933964869941725,
+                                -0.18933964869941725,
+                                0.004169325173610016,
+                                0.004186422200532622,
+                                0.017674815552783198
+                            ],
+                            "velocity": [
+                                -0.14704424494621277,
+                                -0.23410466762146537,
+                                0.09146409137932239,
+                                0.1861620755026222,
+                                0.1861620755026222,
+                                0.0005868177356190179,
+                                0.0005941292348164287,
+                                0.00218164324556474
+                            ]
+                        },
+                        "left_wheel_velocity": 0.9644430875778198,
+                        "linear_velocity": 0.6618630886077881,
+                        "right_wheel_velocity": 0.35928308963775635
+                    },
+                    "topic_name": ""
+                }
+            ],
+            "timestamp": "2025-09-10T11:51:47",
             "total_object_count": 10
         }
     }

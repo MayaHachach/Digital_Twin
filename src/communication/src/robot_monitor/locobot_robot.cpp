@@ -50,12 +50,61 @@ namespace communication
                         // fillPublisherMsg();
                     });
             }
+
+            // Initialize battery subscriber
+            auto battery_it = topics.find("battery_state");
+            if (battery_it != topics.end())
+            {
+                battery_subscriber_ = this->node_->create_subscription<sensor_msgs::msg::BatteryState>(
+                    battery_it->second, qos_profile,
+                    std::bind(&LocobotRobotMonitor::batteryCallback, this, std::placeholders::_1));
+
+                RCLCPP_INFO(this->node_->get_logger(), "Created locobot battery subscriber for topic: %s",
+                            battery_it->second.c_str());
+            }
+
+            // Initialize wheel velocities subscriber
+            auto wheel_vels_it = topics.find("wheel_vel");
+            if (wheel_vels_it != topics.end())
+            {
+                wheel_vels_subscriber_ = this->node_->create_subscription<irobot_create_msgs::msg::WheelVels>(wheel_vels_it->second, qos_profile,
+                                                                                                              std::bind(&LocobotRobotMonitor::wheelVelsCallback, this, std::placeholders::_1));
+
+                RCLCPP_INFO(this->node_->get_logger(), "Created locobot wheel velocities subscriber for topic: %s", wheel_vels_it->second.c_str());
+            }
+
+
         }
         catch (const std::exception &e)
         {
             RCLCPP_ERROR(this->node_->get_logger(),
                          "Failed to initialize locobot subscribers: %s", e.what());
         }
+    }
+
+    void LocobotRobotMonitor::batteryCallback(const sensor_msgs::msg::BatteryState::SharedPtr msg)
+    {
+        status_.data["battery_percentage"] = msg->percentage; // Convert to percentage
+        status_.data["battery_voltage"] = msg->voltage;
+        status_.data["battery_current"] = msg->current;
+        status_.data["battery_temperature"] = msg->temperature;
+
+        // Fill the custom message with the status data
+        fillPublisherMsg();
+    }
+
+    void LocobotRobotMonitor::wheelVelsCallback(const irobot_create_msgs::msg::WheelVels::SharedPtr msg)
+    {
+        // Calculate linear and angular velocity from wheel velocities
+        double wheel_separation = 0.23; // Distance between wheels in meters
+        status_.data["linear_velocity"] = (msg->velocity_left + msg->velocity_right) / 2.0;
+        status_.data["angular_velocity"] = (msg->velocity_right - msg->velocity_left) / wheel_separation;
+
+        status_.data["left_wheel_velocity"] = msg->velocity_left;
+        status_.data["right_wheel_velocity"] = msg->velocity_right;
+
+        // Fill the custom message with the status data
+        fillPublisherMsg();
     }
 
     bool LocobotRobotMonitor::hasJointStatesChanged(const sensor_msgs::msg::JointState &current, const sensor_msgs::msg::JointState &previous) const
@@ -75,8 +124,14 @@ namespace communication
         // Fill the custom message with the status data
         robot_status_.name = robot_id_;
         robot_status_.joint_states = status_.joint_states_data;
-
-        // Publish the custom message
+        robot_status_.percentage = status_.data["battery_percentage"];
+        robot_status_.voltage = status_.data["battery_voltage"];
+        robot_status_.current = status_.data["battery_current"];        // Publish the custom message
+        robot_status_.linear_velocity = status_.data["linear_velocity"];
+        robot_status_.angular_velocity = status_.data["angular_velocity"];
+        robot_status_.velocity_left = status_.data["left_wheel_velocity"];
+        robot_status_.velocity_right = status_.data["right_wheel_velocity"];
+        robot_status_.temperature = status_.data["battery_temperature"];
         status_publisher_->publish(robot_status_);
     }
 

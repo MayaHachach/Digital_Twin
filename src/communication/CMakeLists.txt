@@ -139,6 +139,7 @@ install(
 install(
   PROGRAMS
   navigation/navigation.py 
+  scripts/dummy_publisher.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
