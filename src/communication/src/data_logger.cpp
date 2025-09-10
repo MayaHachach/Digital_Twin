@@ -157,7 +157,7 @@ void DataLogger::logAllObjects(std::unordered_map<std::string, vector<DataLogger
                 for (const auto &[robot_name, robot_data] : robot_monitor->getStatus().data)
                 {
                     robot_status[robot_name] = robot_data;
-                    RCLCPP_INFO(rclcpp::get_logger("Datalogger"), "Robot status: %s", robot_status.dump().c_str());
+                    // RCLCPP_INFO(rclcpp::get_logger("Datalogger"), "Robot status: %s", robot_status.dump().c_str());
                 }
 
                 // navigation_path
@@ -180,7 +180,6 @@ void DataLogger::logAllObjects(std::unordered_map<std::string, vector<DataLogger
                         joint_states_json["effort"].push_back(joint_states.effort[i]);
                     }
                     robot_status["joint_states"] = joint_states_json;
-                    RCLCPP_INFO(rclcpp::get_logger("Datalogger"), "Joint states: %s", joint_states_json.dump().c_str());
                 }
             }
 
