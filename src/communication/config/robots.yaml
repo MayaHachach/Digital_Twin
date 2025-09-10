@@ -22,7 +22,6 @@ communicator_node:
             battery_state: /battery_state
             wheel_vel: /wheel_vels
             navigation_path: /plan 
-            joint_states: /joint_states
       
       Locobot1:
         type: Locobot
@@ -33,3 +32,5 @@ communicator_node:
             navigation_status: e.g. /navigate_to_pose/_action/status
           feedback:
             joint_states: /wx200/joint_states
+            battery_state: /locobot1/battery_state
+            wheel_vel: /locobot1/wheel_vels
